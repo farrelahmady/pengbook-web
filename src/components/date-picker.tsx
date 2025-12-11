@@ -15,8 +15,8 @@ import moment, { Moment } from "moment";
 import { cn } from "@/lib/utils";
 
 export type DatePickerProps = {
-	value: Date | Moment | undefined;
-	onChange: (value: Date | undefined) => void;
+	value: Date | Moment | undefined | null;
+	onChange: (value: Date | undefined | null) => void;
 	format?: string;
 };
 
@@ -33,9 +33,11 @@ export function DatePicker({
 		<Popover open={open} onOpenChange={setOpen}>
 			<PopoverTrigger asChild>
 				<Button
-					variant="outline"
+					variant="outline-secondary"
 					id="date"
-					className={cn("justify-between font-normal")}
+					className={cn(
+						"justify-between font-normal border-input h-9 w-full min-w-0 rounded-md border bg-white px-3 py-1  shadow-xs transition-[color,box-shadow] outline-none"
+					)}
 				>
 					{date ? date.format(format) : "Select date"}
 					<ChevronDownIcon />
