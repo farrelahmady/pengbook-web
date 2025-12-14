@@ -19,66 +19,102 @@ import {
 	PopoverTrigger,
 } from "@/components/ui/popover";
 
+export type ComboBoxOption = {
+	value: string;
+	label: string;
+};
+
 export type ComboBoxProps = {
 	value: string | null;
 	onChange: (value: string | null) => void;
-	data: { value: string; label: string }[] | string[];
+	data: () => Promise<ComboBoxOption[] | string[]>;
 };
 
-export function ComboBox({ ...props }: ComboBoxProps) {
+export function ComboBox(props: ComboBoxProps) {
 	const [open, setOpen] = React.useState(false);
 	const [value, setValue] = React.useState<string | null>(props.value);
-	const list: { value: string; label: string }[] = Array.isArray(props.data)
-		? typeof props.data[0] === "string"
-			? (props.data as string[]).map((x) => ({ value: x, label: x }))
-			: (props.data as { value: string; label: string }[])
-		: [];
+	const [list, setList] = React.useState<ComboBoxOption[]>([]);
+	const [loading, setLoading] = React.useState(false);
 
+	/* ----------------------------- sync value ----------------------------- */
 	React.useEffect(() => {
 		setValue(props.value);
 	}, [props.value]);
 
+	/* ----------------------------- fetch data ----------------------------- */
+	React.useEffect(() => {
+		let mounted = true;
+
+		async function load() {
+			setLoading(true);
+			const data = await props.data();
+
+			if (!mounted) return;
+
+			const normalized: ComboBoxOption[] = Array.isArray(data)
+				? typeof data[0] === "string"
+					? (data as string[]).map((x) => ({ value: x, label: x }))
+					: (data as ComboBoxOption[])
+				: [];
+
+			setList(normalized);
+			setLoading(false);
+		}
+
+		load();
+
+		return () => {
+			mounted = false;
+		};
+	}, [props.data]);
+
+	/* ------------------------------ render ------------------------------ */
+
 	return (
-		<div className="block w-full  relative">
+		<div className="relative w-full">
 			<Popover open={open} onOpenChange={setOpen}>
 				<PopoverTrigger asChild>
 					<Button
 						variant="outline-secondary"
 						role="combobox"
 						aria-expanded={open}
-						className="justify-between font-normal border-input h-9 w-full min-w-0 rounded-md border bg-white px-3 py-1  shadow-xs transition-[color,box-shadow] outline-none"
+						className="flex h-9 w-full items-center justify-between rounded-md border px-3 py-2 text-sm"
+						disabled={loading}
 					>
 						<span className="truncate max-w-[85%]">
 							{value
-								? list.find((data) => data.value === value)?.label
-								: "Select framework..."}
+								? list.find((x) => x.value === value)?.label
+								: loading
+								? "Loading..."
+								: "Select option"}
 						</span>
 						<ChevronsUpDown className="opacity-50" />
 					</Button>
 				</PopoverTrigger>
+
 				<PopoverContent className="w-[200px] p-0">
 					<Command>
-						<CommandInput placeholder="Search framework..." className="h-9" />
+						<CommandInput placeholder="Search..." className="h-9" />
 						<CommandList>
-							<CommandEmpty>No framework found.</CommandEmpty>
+							<CommandEmpty>No data found.</CommandEmpty>
 							<CommandGroup>
-								{list.map((data) => (
+								{list.map((item) => (
 									<CommandItem
-										key={data.value}
-										value={data.value}
-										onSelect={(currentValue: string) => {
-											setValue(currentValue === value ? null : currentValue);
-											props.onChange(
-												currentValue === value ? null : currentValue
-											);
+										key={item.value}
+										value={item.value}
+										onSelect={(currentValue) => {
+											const next = currentValue === value ? null : currentValue;
+
+											setValue(next);
+											props.onChange(next);
 											setOpen(false);
 										}}
 									>
-										{data.label}
+										{item.label}
 										<Check
 											className={cn(
 												"ml-auto",
-												value === data.value ? "opacity-100" : "opacity-0"
+												value === item.value ? "opacity-100" : "opacity-0"
 											)}
 										/>
 									</CommandItem>

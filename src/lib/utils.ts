@@ -63,3 +63,7 @@ export function allowNumberCommaDotOnly(
 export const iconSetting: SxProps<Theme> = {
 	fontSize: { xs: 12, sm: 12, md: 16, lg: 20 },
 };
+
+export function getValue<T, K extends keyof T>(obj: T, key: K): T[K] {
+	return obj[key];
+}
