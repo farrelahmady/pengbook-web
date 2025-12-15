@@ -4,7 +4,7 @@ import { CurrencyInput } from "@/components/currency-input";
 import { DatePicker } from "@/components/date-picker";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { masterChartOfAccounts, Transaction } from "@/lib/data";
+import { masterChartOfAccounts, Pagination, Transaction } from "@/lib/data";
 import { ColumnDef } from "@tanstack/react-table";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
@@ -16,6 +16,7 @@ import { ColumnConfig, DataTable } from "@/components/datatable";
 
 export type TransactionListProps = {
 	data: Transaction[];
+	pagination: Pagination;
 };
 
 export type TransactionColumns = {
@@ -144,7 +145,7 @@ export function TransactionList(props: TransactionListProps) {
 				to: null,
 				amount: null,
 				note: null,
-				key: crypto.randomUUID(),
+				uid: crypto.randomUUID(),
 				status: "new",
 			},
 			...prev,
@@ -152,13 +153,13 @@ export function TransactionList(props: TransactionListProps) {
 	}
 
 	function cancelAddRow(id: string) {
-		setRows((prev) => prev.filter((r) => r.key !== id));
+		setRows((prev) => prev.filter((r) => r.uid !== id));
 	}
 
 	function updateRow(id: string, patch: Partial<Transaction>) {
 		setRows((prev) =>
 			prev.map((r) => {
-				if (r.key !== id) return r;
+				if (r.uid !== id) return r;
 
 				const newStatus = r.status === "existing" ? "updated" : r.status;
 
@@ -168,11 +169,11 @@ export function TransactionList(props: TransactionListProps) {
 	}
 
 	function cancelUpdateRow(id: string) {
-		const orig = props.data.find((r) => r.key === id);
+		const orig = props.data.find((r) => r.uid === id);
 		if (orig) {
 			setRows((prev) => {
 				return prev.map((r) => {
-					if (r.key !== id) return r;
+					if (r.uid !== id) return r;
 					return { ...r, ...orig, status: "existing" };
 				});
 			});
@@ -200,6 +201,7 @@ export function TransactionList(props: TransactionListProps) {
 			<DataTable
 				data={rows}
 				columns={columns}
+				pagination={props.pagination}
 				sortable
 				editable
 				deleteable

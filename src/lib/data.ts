@@ -1,5 +1,4 @@
 export const masterChartOfAccounts = [
-	"11.01.00 - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 	"11.01.01 - Mandiri - Main",
 	"11.01.02 - BCA - Main",
 	"11.01.03 - Jago - Main",
@@ -80,66 +79,221 @@ export const masterChartOfAccounts = [
 	"54.04.01 - Purchase Discount",
 	"61.01.01 - Reclass Adjustments",
 ];
-
+export type Pagination = {
+	page: number;
+	limit: number;
+	total: number;
+	totalPages: number;
+};
 export type Transaction = {
 	id: number | null;
+	uid: string;
+	status: "new" | "updated" | "deleted" | "existing";
 	date: Date | null;
 	from: string | null;
 	to: string | null;
 	amount: number | null;
 	note: string | null;
-	key: string;
-	status: "new" | "updated" | "deleted" | "existing";
 };
 export const transactionList: Transaction[] = [
 	{
 		id: 1,
+		uid: crypto.randomUUID(),
+		status: "existing",
 		date: new Date("2025-11-30"),
 		from: "11.01.01 - Mandiri - Main",
 		to: "61.01.01 - Reclass Adjustments",
 		amount: 75626,
 		note: "Adjustment",
-		key: crypto.randomUUID(),
-		status: "existing",
 	},
 	{
 		id: 2,
+		uid: crypto.randomUUID(),
+		status: "existing",
 		date: new Date("2025-11-30"),
 		from: "11.03.03 - Dipay",
 		to: "61.01.01 - Reclass Adjustments",
-		amount: 123,
+		amount: 593473,
 		note: "Adjustment",
-		key: crypto.randomUUID(),
-		status: "existing",
 	},
 	{
 		id: 3,
+		uid: crypto.randomUUID(),
+		status: "existing",
 		date: new Date("2025-11-30"),
 		from: "11.01.03 - Jago - Main",
 		to: "61.01.01 - Reclass Adjustments",
 		amount: 6403971,
 		note: "Adjustment",
-		key: crypto.randomUUID(),
-		status: "existing",
 	},
 	{
 		id: 4,
+		uid: crypto.randomUUID(),
+		status: "existing",
 		date: new Date("2025-11-30"),
 		from: "11.01.03 - Jago - Main",
 		to: "51.01.03 - Toiletries",
 		amount: 18900,
 		note: "Shampoo",
-		key: crypto.randomUUID(),
-		status: "existing",
 	},
 	{
 		id: 5,
+		uid: crypto.randomUUID(),
+		status: "existing",
 		date: new Date("2025-11-30"),
 		from: "11.01.03 - Jago - Main",
 		to: "52.01.03 - Snack",
 		amount: 17000,
 		note: "Fit me up",
-		key: crypto.randomUUID(),
+	},
+	{
+		id: 6,
+		uid: crypto.randomUUID(),
 		status: "existing",
+		date: new Date("2025-11-28"),
+		from: "11.01.03 - Jago - Main",
+		to: "51.02.01 - Groceries",
+		amount: 38300,
+		note: "Telur, Mi, Fruit Tea, Mama Lemon",
+	},
+	{
+		id: 7,
+		uid: crypto.randomUUID(),
+		status: "existing",
+		date: new Date("2025-11-26"),
+		from: "11.01.03 - Jago - Main",
+		to: "52.02.04 - Pet",
+		amount: 1200,
+		note: "Sikat Pipa",
+	},
+	{
+		id: 8,
+		uid: crypto.randomUUID(),
+		status: "existing",
+		date: new Date("2025-11-25"),
+		from: "11.01.03 - Jago - Main",
+		to: "52.02.04 - Pet",
+		amount: 39955,
+		note: "Co2 Tablet",
+	},
+	{
+		id: 9,
+		uid: crypto.randomUUID(),
+		status: "existing",
+		date: new Date("2025-11-23"),
+		from: "11.01.03 - Jago - Main",
+		to: "52.02.04 - Pet",
+		amount: 39955,
+		note: "Co2 Tablet",
+	},
+	{
+		id: 10,
+		uid: crypto.randomUUID(),
+		status: "existing",
+		date: new Date("2025-11-23"),
+		from: "11.01.03 - Jago - Main",
+		to: "52.02.04 - Pet",
+		amount: 67999,
+		note: "Lampu Kandila",
+	},
+	{
+		id: 11,
+		uid: crypto.randomUUID(),
+		status: "existing",
+		date: new Date("2025-11-19"),
+		from: "11.01.03 - Jago - Main",
+		to: "52.02.04 - Pet",
+		amount: 47774,
+		note: "Aquascape Co2, Udang, Keong",
+	},
+	{
+		id: 12,
+		uid: crypto.randomUUID(),
+		status: "existing",
+		date: new Date("2025-11-19"),
+		from: "11.01.03 - Jago - Main",
+		to: "51.02.01 - Groceries",
+		amount: 13626,
+		note: "Donat Glaze",
+	},
+	{
+		id: 13,
+		uid: crypto.randomUUID(),
+		status: "existing",
+		date: new Date("2025-11-18"),
+		from: "11.01.03 - Jago - Main",
+		to: "52.01.01 - Cigarette",
+		amount: 101600,
+		note: "Pod Liquid Sweet Apple",
+	},
+	{
+		id: 14,
+		uid: crypto.randomUUID(),
+		status: "existing",
+		date: new Date("2025-11-17"),
+		from: "11.01.01 - Mandiri - Main",
+		to: "52.02.02 - Travelling",
+		amount: 1125062,
+		note: "Pulang Tiket to SBY",
+	},
+	{
+		id: 15,
+		uid: crypto.randomUUID(),
+		status: "existing",
+		date: new Date("2025-11-17"),
+		from: "11.01.03 - Jago - Main",
+		to: "11.01.01 - Mandiri - Main",
+		amount: 1125062,
+		note: "Pulang Tiket to SBY",
+	},
+	{
+		id: 16,
+		uid: crypto.randomUUID(),
+		status: "existing",
+		date: new Date("2025-11-15"),
+		from: "11.01.03 - Jago - Main",
+		to: "11.02.01 - Wallet Cash",
+		amount: 1000000,
+		note: "Withdrawn",
+	},
+	{
+		id: 17,
+		uid: crypto.randomUUID(),
+		status: "existing",
+		date: new Date("2025-11-10"),
+		from: "42.01.03 - Interest Income",
+		to: "11.01.01 - Mandiri - Main",
+		amount: 71745,
+		note: "Coupon Bond Coupon ST012T2",
+	},
+	{
+		id: 18,
+		uid: crypto.randomUUID(),
+		status: "existing",
+		date: new Date("2025-11-01"),
+		from: "54.02.01 - Gift",
+		to: "11.01.01 - Mandiri - Main",
+		amount: 5000000,
+		note: "Transfer From Papa",
 	},
 ];
+
+export function getDummyTransaction({
+	page,
+	limit,
+}: {
+	page: number;
+	limit: number;
+}) {
+	const total = transactionList.length;
+	const totalPages = Math.ceil(total / limit);
+	return {
+		items: transactionList.slice((page - 1) * limit, page * limit),
+		pagination: {
+			page,
+			limit,
+			total,
+			totalPages,
+		},
+	};
+}

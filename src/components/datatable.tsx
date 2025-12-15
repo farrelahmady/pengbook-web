@@ -33,10 +33,12 @@ import { ComboBox } from "./combo-box";
 import { Input } from "./ui/input";
 import { CurrencyInput } from "./currency-input";
 import { Textarea } from "./ui/textarea";
+import { Pagination } from "@/lib/data";
 export type DataTableProps<T> = {
 	title?: string | React.Component;
 	data: T[];
 	columns: ColumnConfig<T>[];
+	pagination?: Pagination;
 	addable?: boolean;
 	editable?: boolean;
 	deleteable?: boolean;
@@ -84,9 +86,13 @@ export function DataTable<T>(props: DataTableProps<T>) {
 	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
 		[]
 	);
+
+	const limitPageNumber = 3;
+
 	const [columnVisibility, setColumnVisibility] =
 		React.useState<VisibilityState>({});
 	const [rowSelection, setRowSelection] = React.useState({});
+	const [pages, setPages] = React.useState();
 
 	useEffect(() => {
 		setRows(props.data);
@@ -342,6 +348,24 @@ export function DataTable<T>(props: DataTableProps<T>) {
 					>
 						Previous
 					</Button>
+					{getPaginationRange(
+						table.getState().pagination.pageIndex + 1,
+						props.pagination?.totalPages ?? 1,
+						3
+					).map((page) => (
+						<Button
+							key={page}
+							variant={
+								page === table.getState().pagination.pageIndex + 1
+									? "primary"
+									: "ghost"
+							}
+							size="sm"
+							onClick={() => table.setPageIndex(page - 1)}
+						>
+							{page}
+						</Button>
+					))}
 					<Button
 						variant="primary"
 						size="sm"
@@ -430,4 +454,32 @@ function CellContent(props: CellContentProps) {
 	}
 
 	return <>{displayValue}</>;
+}
+
+function getPaginationRange(
+	currentPage: number,
+	totalPages: number,
+	visibleCount = 3
+): number[] {
+	const half = Math.floor(visibleCount / 2);
+
+	let start = currentPage - half;
+	let end = currentPage + half;
+
+	// Jika di awal
+	if (start < 1) {
+		start = 1;
+		end = visibleCount;
+	}
+
+	// Jika di akhir
+	if (end > totalPages) {
+		end = totalPages;
+		start = totalPages - visibleCount + 1;
+	}
+
+	// Safety guard
+	start = Math.max(start, 1);
+
+	return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 }
