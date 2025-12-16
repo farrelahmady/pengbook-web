@@ -220,7 +220,10 @@ export function DataTable<T extends RowBase>(props: DataTableProps<T>) {
 				const item = row.original as T;
 				const value = item[c.key];
 
-				if (!isEditable) {
+				const isEditing =
+					changeSet.updated.has(item.uid) || changeSet.added.has(item.uid);
+
+				if (!isEditable || !isEditing) {
 					return (
 						<CellContent inputType={c.inputType ?? "text"} value={value} />
 					);
@@ -414,8 +417,14 @@ export function DataTable<T extends RowBase>(props: DataTableProps<T>) {
 																<Button
 																	variant="ghost"
 																	size="icon-sm"
-																	disabled
 																	title="No changes"
+																	onClick={() => {
+																		setChangeSet((prev) => {
+																			const next = structuredClone(prev);
+																			next.updated.set(item.uid, {}); // 👈 trigger edit mode
+																			return next;
+																		});
+																	}}
 																>
 																	<EditIcon sx={iconSetting} />
 																</Button>
