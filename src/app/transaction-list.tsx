@@ -17,7 +17,11 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import { iconSetting } from "@/lib/utils";
 import React, { useEffect } from "react";
-import { ColumnConfig, DataTable } from "@/components/datatable";
+import {
+	ColumnConfig,
+	DataTable,
+	QueryDataTable,
+} from "@/components/datatable";
 import { useQuery } from "@tanstack/react-query";
 
 export type TransactionListProps = {
@@ -204,8 +208,9 @@ export function TransactionList(props: TransactionListProps) {
 					)}
 				</div>
 			</div>
-			<DataTable
-				data={props.data}
+			<QueryDataTable
+				title={"Transaction"}
+				initialItems={props.data}
 				columns={columns}
 				queryKeyBase={["transactions"]}
 				queryFn={({ page, limit }) => {

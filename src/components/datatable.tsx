@@ -36,10 +36,10 @@ import { Input } from "./ui/input";
 import { CurrencyInput } from "./currency-input";
 import { Textarea } from "./ui/textarea";
 import { Pagination } from "@/lib/data";
-import { useQuery } from "@tanstack/react-query";
-export type DataTableProps<T> = {
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+export type QueryDataTableProps<T extends RowBase> = {
 	title?: string | React.Component;
-	data: T[];
+	initialItems: T[];
 	columns: ColumnConfig<T>[];
 	queryKeyBase: unknown[];
 	queryFn: (params: { page: number; limit: number }) => Promise<{
@@ -53,6 +53,24 @@ export type DataTableProps<T> = {
 	filterable?: boolean;
 	onSave?: (data: { add: T[]; update: T[] }) => Promise<void>;
 	onDelete?: (data: { delete: T[] }) => Promise<void>;
+};
+
+export type DataTableProps<T extends RowBase> = {
+	title?: string | React.Component;
+	items: T[];
+	columns: ColumnConfig<T>[];
+	pageCount?: number;
+	addable?: boolean;
+	editable?: boolean;
+	deleteable?: boolean;
+	sortable?: boolean;
+	filterable?: boolean;
+	pagination?: PaginationState;
+	sorting?: SortingState;
+	onSave?: (data: { add: T[]; update: T[] }) => Promise<void>;
+	onDelete?: (data: { delete: T[] }) => Promise<void>;
+	onPaginationChange?: OnChangeFn<PaginationState>;
+	onSortingChange?: OnChangeFn<SortingState>;
 };
 
 export type ColumnConfig<T> = {
@@ -85,11 +103,21 @@ export type InputValueMap = {
 	date: Date | null;
 	"combo-box": string | null;
 };
+type RowBase = {
+	uid: string;
+	[key: string]: unknown;
+};
 
-export function DataTable<T extends { uid: string }>(props: DataTableProps<T>) {
-	const [rows, setRows] = React.useState(props.data);
-	const [editingId, setEditingId] = React.useState<string | null>(null);
-	const [draftRow, setDraftRow] = React.useState<T | null>(null);
+type RowPatch<T extends RowBase> = Partial<Omit<T, "uid">>;
+type ChangeSet<T extends RowBase> = {
+	added: Map<string, T>;
+	updated: Map<string, RowPatch<T>>;
+	deleted: Set<string>;
+};
+
+export function QueryDataTable<T extends { uid: string }>(
+	props: QueryDataTableProps<T>
+) {
 	const [pagination, setPagination] = React.useState({
 		pageIndex: 0,
 		pageSize: 5,
@@ -97,24 +125,65 @@ export function DataTable<T extends { uid: string }>(props: DataTableProps<T>) {
 	const [sorting, setSorting] = React.useState<SortingState>([]);
 
 	const { data } = useQuery({
-		queryKey: [...props.queryKeyBase, props.data, pagination, sorting],
+		queryKey: [...props.queryKeyBase, pagination, sorting],
 		queryFn: () => {
 			return props.queryFn({
 				page: pagination.pageIndex + 1,
 				limit: pagination.pageSize,
 			});
 		},
-		initialData: { items: props.data },
+		initialData: { items: props.initialItems },
 		placeholderData: (previousData) => previousData,
 		retryOnMount: false,
 		refetchOnMount: false,
 	});
 
-	useEffect(() => {
-		if (data?.items) {
-			setRows(data.items);
-		}
-	}, [data]);
+	const queryClient = useQueryClient();
+
+	const saveMutation = useMutation({
+		mutationFn: props.onSave!,
+		onSuccess: async () => {
+			await queryClient.invalidateQueries({
+				queryKey: props.queryKeyBase,
+				exact: false,
+			});
+		},
+	});
+
+	return (
+		<DataTable
+			{...props}
+			onSave={async ({ add, update }) => {
+				saveMutation.mutate({ add, update });
+			}}
+			items={data.items}
+			pagination={pagination}
+			sorting={sorting}
+			onPaginationChange={setPagination}
+			onSortingChange={setSorting}
+		/>
+	);
+}
+
+export function DataTable<T extends RowBase>(props: DataTableProps<T>) {
+	const [changeSet, setChangeSet] = React.useState<ChangeSet<T>>({
+		added: new Map(),
+		updated: new Map(),
+		deleted: new Set(),
+	});
+
+	const rows = React.useMemo(() => {
+		const baseRows = props.items
+			.filter((row) => !changeSet.deleted.has(row.uid))
+			.map((row) => {
+				const patch = changeSet.updated.get(row.uid);
+				return patch ? { ...row, ...patch } : row;
+			});
+
+		const addedRows = Array.from(changeSet.added.values());
+
+		return [...addedRows, ...baseRows]; // 🔑 added di atas
+	}, [props.items, changeSet]);
 
 	const columns: ColumnDef<T>[] = props.columns.map((c) => {
 		const isSortable = c.sortable ?? props.sortable ?? false;
@@ -149,22 +218,50 @@ export function DataTable<T extends { uid: string }>(props: DataTableProps<T>) {
 			},
 			cell: ({ row }) => {
 				const item = row.original as T;
-				const rawValue =
-					item.uid === editingId && draftRow ? draftRow[c.key] : item[c.key];
+				const value = item[c.key];
 
-				if (isEditable && item.uid === editingId) {
+				if (!isEditable) {
 					return (
-						<EditableContent
-							inputType={c.inputType ?? "text"}
-							value={rawValue as any}
-							onChange={(v) => updateDraftValue(c.key, v as any)}
-							dataSource={c.dataSource}
-						/>
+						<CellContent inputType={c.inputType ?? "text"} value={value} />
 					);
 				}
 
 				return (
-					<CellContent inputType={c.inputType ?? "text"} value={rawValue} />
+					<EditableContent
+						inputType={c.inputType ?? "text"}
+						value={value as any}
+						onChange={(v) => {
+							setChangeSet((prev) => {
+								const next: ChangeSet<T> = {
+									added: new Map(prev.added),
+									updated: new Map(prev.updated),
+									deleted: new Set(prev.deleted),
+								};
+
+								const original = props.items.find((r) => r.uid === item.uid);
+								if (!original) return next;
+
+								const patch = {
+									...(next.updated.get(item.uid) ?? {}),
+								} as Partial<T>;
+
+								if (original[c.key] === v) {
+									delete patch[c.key];
+								} else {
+									patch[c.key] = v as T[keyof T];
+								}
+
+								if (Object.keys(patch).length === 0) {
+									next.updated.delete(item.uid);
+								} else {
+									next.updated.set(item.uid, patch);
+								}
+
+								return next;
+							});
+						}}
+						dataSource={c.dataSource}
+					/>
 				);
 			},
 			enableSorting: isSortable,
@@ -185,30 +282,23 @@ export function DataTable<T extends { uid: string }>(props: DataTableProps<T>) {
 		pageCount: props.pageCount,
 
 		state: {
-			pagination: pagination,
-			sorting: sorting,
+			pagination: props.pagination,
+			sorting: props.sorting,
 		},
 
-		onPaginationChange: setPagination,
-		onSortingChange: setSorting,
+		onPaginationChange: props.onPaginationChange,
+		onSortingChange: props.onSortingChange,
 
 		getCoreRowModel: getCoreRowModel(),
 	});
 
-	function updateCellValue<K extends keyof T>(
-		rowIndex: number,
-		key: K,
-		value: T[K]
-	) {
-		setRows((prev) =>
-			prev.map((row, idx) =>
-				idx === rowIndex ? { ...row, [key]: value } : row
-			)
-		);
-	}
-
-	function updateDraftValue<K extends keyof T>(key: K, value: T[K]) {
-		setDraftRow((prev) => (prev ? { ...prev, [key]: value } : prev));
+	function getRowStatus<T extends RowBase>(
+		row: T,
+		changeSet: ChangeSet<T>
+	): "existing" | "updated" | "new" {
+		if (changeSet.added.has(row.uid)) return "new";
+		if (changeSet.updated.has(row.uid)) return "updated";
+		return "existing";
 	}
 
 	return (
@@ -261,10 +351,19 @@ export function DataTable<T extends { uid: string }>(props: DataTableProps<T>) {
 							{table.getRowModel().rows?.length ? (
 								table.getRowModel().rows.map((row) => {
 									const item = row.original as T;
+									const status = getRowStatus(item, changeSet);
 									return (
 										<TableRow
 											key={item.uid}
 											data-state={row.getIsSelected() && "selected"}
+											data-status={status}
+											className={
+												status === "new"
+													? "bg-green-50"
+													: status === "updated"
+													? "bg-yellow-50"
+													: undefined
+											}
 										>
 											{row.getVisibleCells().map((cell) => {
 												const meta = (cell.column.columnDef.meta ?? {}) as any;
@@ -306,53 +405,69 @@ export function DataTable<T extends { uid: string }>(props: DataTableProps<T>) {
 														textAlign: "center",
 													}}
 												>
-													{item.uid === editingId ? (
-														<>
-															<Button
-																variant="ghost"
-																size="icon-sm"
-																onClick={() => {
-																	if (!draftRow) return;
+													{(() => {
+														const patch = changeSet.updated.get(item.uid);
 
-																	setRows((prev) =>
-																		prev.map((row) =>
-																			row.uid === draftRow.uid ? draftRow : row
-																		)
-																	);
+														// 🔹 ROW TIDAK ADA PERUBAHAN
+														if (!patch) {
+															return (
+																<Button
+																	variant="ghost"
+																	size="icon-sm"
+																	disabled
+																	title="No changes"
+																>
+																	<EditIcon sx={iconSetting} />
+																</Button>
+															);
+														}
 
-																	setEditingId(null);
-																	setDraftRow(null);
-																	props.onSave?.({
-																		add: [],
-																		update: [draftRow],
-																	});
-																}}
-															>
-																<CheckIcon sx={iconSetting} />
-															</Button>
-															<Button
-																variant="ghost"
-																size="icon-sm"
-																onClick={() => {
-																	setEditingId(null);
-																	setDraftRow(null);
-																}}
-															>
-																<ClearIcon sx={iconSetting} />
-															</Button>
-														</>
-													) : (
-														<Button
-															variant="ghost"
-															size="icon-sm"
-															onClick={() => {
-																setEditingId(item.uid);
-																setDraftRow({ ...item }); // 🔑 snapshot
-															}}
-														>
-															<EditIcon sx={iconSetting} />
-														</Button>
-													)}
+														const fullRow: T = {
+															...item,
+															...patch,
+														};
+
+														// 🔹 ROW ADA PERUBAHAN
+														return (
+															<>
+																{/* SAVE PER ROW */}
+																<Button
+																	variant="ghost"
+																	size="icon-sm"
+																	onClick={async () => {
+																		await props.onSave?.({
+																			add: [],
+																			update: [fullRow],
+																		});
+
+																		// bersihkan changeset row ini
+																		setChangeSet((prev) => {
+																			const next = structuredClone(prev);
+																			next.updated.delete(item.uid);
+																			return next;
+																		});
+																	}}
+																>
+																	<CheckIcon sx={iconSetting} />
+																</Button>
+
+																{/* REVERT PER ROW */}
+																<Button
+																	variant="ghost"
+																	size="icon-sm"
+																	onClick={() => {
+																		setChangeSet((prev) => {
+																			const next = structuredClone(prev);
+																			next.updated.delete(item.uid);
+																			return next;
+																		});
+																	}}
+																>
+																	<ClearIcon sx={iconSetting} />
+																</Button>
+															</>
+														);
+													})()}
 												</TableCell>
 											)}
 										</TableRow>
