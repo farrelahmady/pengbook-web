@@ -4,8 +4,13 @@ import { CurrencyInput } from "@/components/currency-input";
 import { DatePicker } from "@/components/date-picker";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { masterChartOfAccounts, Pagination, Transaction } from "@/lib/data";
-import { ColumnDef } from "@tanstack/react-table";
+import {
+	getDummyTransaction,
+	masterChartOfAccounts,
+	Pagination,
+	Transaction,
+} from "@/lib/data";
+import { ColumnDef, SortingState } from "@tanstack/react-table";
 import SaveIcon from "@mui/icons-material/Save";
 import CancelIcon from "@mui/icons-material/Cancel";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -13,6 +18,7 @@ import AddIcon from "@mui/icons-material/Add";
 import { iconSetting } from "@/lib/utils";
 import React, { useEffect } from "react";
 import { ColumnConfig, DataTable } from "@/components/datatable";
+import { useQuery } from "@tanstack/react-query";
 
 export type TransactionListProps = {
 	data: Transaction[];
@@ -199,9 +205,18 @@ export function TransactionList(props: TransactionListProps) {
 				</div>
 			</div>
 			<DataTable
-				data={rows}
+				data={props.data}
 				columns={columns}
-				pagination={props.pagination}
+				queryKeyBase={["transactions"]}
+				queryFn={({ page, limit }) => {
+					const data = getDummyTransaction({ page: page, limit: limit });
+					console.log("Data", data);
+
+					return Promise.resolve({
+						items: data.items,
+					});
+				}}
+				pageCount={props.pagination.totalPages}
 				sortable
 				editable
 				deleteable

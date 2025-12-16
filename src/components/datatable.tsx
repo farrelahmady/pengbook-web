@@ -8,6 +8,8 @@ import {
 	getFilteredRowModel,
 	getPaginationRowModel,
 	getSortedRowModel,
+	OnChangeFn,
+	PaginationState,
 	SortingState,
 	useReactTable,
 	VisibilityState,
@@ -34,11 +36,16 @@ import { Input } from "./ui/input";
 import { CurrencyInput } from "./currency-input";
 import { Textarea } from "./ui/textarea";
 import { Pagination } from "@/lib/data";
+import { useQuery } from "@tanstack/react-query";
 export type DataTableProps<T> = {
 	title?: string | React.Component;
 	data: T[];
 	columns: ColumnConfig<T>[];
-	pagination?: Pagination;
+	queryKeyBase: unknown[];
+	queryFn: (params: { page: number; limit: number }) => Promise<{
+		items: T[];
+	}>;
+	pageCount?: number;
 	addable?: boolean;
 	editable?: boolean;
 	deleteable?: boolean;
@@ -79,31 +86,42 @@ export type InputValueMap = {
 	"combo-box": string | null;
 };
 
-export function DataTable<T>(props: DataTableProps<T>) {
+export function DataTable<T extends { uid: string }>(props: DataTableProps<T>) {
 	const [rows, setRows] = React.useState(props.data);
 	const [editingId, setEditingId] = React.useState<string | null>(null);
+	const [draftRow, setDraftRow] = React.useState<T | null>(null);
+	const [pagination, setPagination] = React.useState({
+		pageIndex: 0,
+		pageSize: 5,
+	});
 	const [sorting, setSorting] = React.useState<SortingState>([]);
-	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-		[]
-	);
 
-	const limitPageNumber = 3;
-
-	const [columnVisibility, setColumnVisibility] =
-		React.useState<VisibilityState>({});
-	const [rowSelection, setRowSelection] = React.useState({});
-	const [pages, setPages] = React.useState();
+	const { data } = useQuery({
+		queryKey: [...props.queryKeyBase, props.data, pagination, sorting],
+		queryFn: () => {
+			return props.queryFn({
+				page: pagination.pageIndex + 1,
+				limit: pagination.pageSize,
+			});
+		},
+		initialData: { items: props.data },
+		placeholderData: (previousData) => previousData,
+		retryOnMount: false,
+		refetchOnMount: false,
+	});
 
 	useEffect(() => {
-		setRows(props.data);
-	}, [props.data]);
+		if (data?.items) {
+			setRows(data.items);
+		}
+	}, [data]);
 
 	const columns: ColumnDef<T>[] = props.columns.map((c) => {
 		const isSortable = c.sortable ?? props.sortable ?? false;
 		const isEditable = c.editable ?? props.editable ?? false;
 		return {
 			accessorKey: c.key,
-			header: ({ header, column, table }) => {
+			header: ({ column }) => {
 				return (
 					<>
 						<div className="flex items-center gap-2">
@@ -131,16 +149,15 @@ export function DataTable<T>(props: DataTableProps<T>) {
 			},
 			cell: ({ row }) => {
 				const item = row.original as T;
-				const rawValue = item[c.key];
+				const rawValue =
+					item.uid === editingId && draftRow ? draftRow[c.key] : item[c.key];
 
-				if (isEditable && row.id === editingId) {
+				if (isEditable && item.uid === editingId) {
 					return (
 						<EditableContent
 							inputType={c.inputType ?? "text"}
 							value={rawValue as any}
-							onChange={(v) =>
-								updateCellValue(row.index, c.key, v as T[typeof c.key])
-							}
+							onChange={(v) => updateDraftValue(c.key, v as any)}
 							dataSource={c.dataSource}
 						/>
 					);
@@ -160,22 +177,22 @@ export function DataTable<T>(props: DataTableProps<T>) {
 
 	const table = useReactTable({
 		data: rows,
-		columns: columns,
-		onSortingChange: setSorting,
-		onColumnFiltersChange: setColumnFilters,
-		getCoreRowModel: getCoreRowModel(),
-		getPaginationRowModel: getPaginationRowModel(),
-		getSortedRowModel: getSortedRowModel(),
-		getFilteredRowModel: getFilteredRowModel(),
-		onColumnVisibilityChange: setColumnVisibility,
-		onRowSelectionChange: setRowSelection,
+		columns,
+
+		manualPagination: true,
 		manualSorting: true,
+
+		pageCount: props.pageCount,
+
 		state: {
-			sorting,
-			columnFilters,
-			columnVisibility,
-			rowSelection,
+			pagination: pagination,
+			sorting: sorting,
 		},
+
+		onPaginationChange: setPagination,
+		onSortingChange: setSorting,
+
+		getCoreRowModel: getCoreRowModel(),
 	});
 
 	function updateCellValue<K extends keyof T>(
@@ -188,6 +205,10 @@ export function DataTable<T>(props: DataTableProps<T>) {
 				idx === rowIndex ? { ...row, [key]: value } : row
 			)
 		);
+	}
+
+	function updateDraftValue<K extends keyof T>(key: K, value: T[K]) {
+		setDraftRow((prev) => (prev ? { ...prev, [key]: value } : prev));
 	}
 
 	return (
@@ -238,87 +259,105 @@ export function DataTable<T>(props: DataTableProps<T>) {
 						</TableHeader>
 						<TableBody>
 							{table.getRowModel().rows?.length ? (
-								table.getRowModel().rows.map((row) => (
-									<TableRow
-										key={row.id}
-										data-state={row.getIsSelected() && "selected"}
-									>
-										{row.getVisibleCells().map((cell) => {
-											const meta = (cell.column.columnDef.meta ?? {}) as any;
+								table.getRowModel().rows.map((row) => {
+									const item = row.original as T;
+									return (
+										<TableRow
+											key={item.uid}
+											data-state={row.getIsSelected() && "selected"}
+										>
+											{row.getVisibleCells().map((cell) => {
+												const meta = (cell.column.columnDef.meta ?? {}) as any;
 
-											return (
-												<TableCell
-													key={cell.id}
-													style={{
-														width: cell.column.getSize(),
-														position: meta.sticky ? "sticky" : "relative",
-														right: meta.sticky ? 0 : undefined,
-														zIndex: meta.sticky ? 5 : undefined,
-														background: meta.sticky
-															? "var(--background)"
-															: undefined,
-														boxShadow: meta.sticky
-															? "-4px 0 8px rgba(0, 0, 0, 0.08)"
-															: undefined,
-														backdropFilter: meta.sticky
-															? "blur(2px)"
-															: undefined,
-													}}
-												>
-													{flexRender(
-														cell.column.columnDef.cell,
-														cell.getContext()
-													)}
-												</TableCell>
-											);
-										})}
-										{props.editable && (
-											<TableCell
-												style={{
-													width: 50,
-													position: "sticky",
-													right: 0,
-													boxShadow: "-2px 0 8px rgba(0, 0, 0, 0.08)",
-													backdropFilter: "blur(1px)",
-													textAlign: "center",
-												}}
-											>
-												{row.id === editingId ? (
-													<>
-														<Button
-															variant="ghost"
-															size="icon-sm"
-															onClick={() => {
-																setEditingId(row.id);
-															}}
-														>
-															<CheckIcon sx={iconSetting} />
-														</Button>
-														<Button
-															variant="ghost"
-															size="icon-sm"
-															onClick={() => {
-																setEditingId(null);
-															}}
-														>
-															<ClearIcon sx={iconSetting} />
-														</Button>
-													</>
-												) : (
-													<Button
-														variant="ghost"
-														size="icon-sm"
-														onClick={() => {
-															setEditingId(row.id);
+												return (
+													<TableCell
+														key={cell.id}
+														style={{
+															width: cell.column.getSize(),
+															position: meta.sticky ? "sticky" : "relative",
+															right: meta.sticky ? 0 : undefined,
+															zIndex: meta.sticky ? 5 : undefined,
+															background: meta.sticky
+																? "var(--background)"
+																: undefined,
+															boxShadow: meta.sticky
+																? "-4px 0 8px rgba(0, 0, 0, 0.08)"
+																: undefined,
+															backdropFilter: meta.sticky
+																? "blur(2px)"
+																: undefined,
 														}}
 													>
-														<EditIcon sx={iconSetting} />
-													</Button>
-												)}
-											</TableCell>
-										)}
-									</TableRow>
-								))
+														{flexRender(
+															cell.column.columnDef.cell,
+															cell.getContext()
+														)}
+													</TableCell>
+												);
+											})}
+											{props.editable && (
+												<TableCell
+													style={{
+														width: 50,
+														position: "sticky",
+														right: 0,
+														boxShadow: "-2px 0 8px rgba(0, 0, 0, 0.08)",
+														backdropFilter: "blur(1px)",
+														textAlign: "center",
+													}}
+												>
+													{item.uid === editingId ? (
+														<>
+															<Button
+																variant="ghost"
+																size="icon-sm"
+																onClick={() => {
+																	if (!draftRow) return;
+
+																	setRows((prev) =>
+																		prev.map((row) =>
+																			row.uid === draftRow.uid ? draftRow : row
+																		)
+																	);
+
+																	setEditingId(null);
+																	setDraftRow(null);
+																	props.onSave?.({
+																		add: [],
+																		update: [draftRow],
+																	});
+																}}
+															>
+																<CheckIcon sx={iconSetting} />
+															</Button>
+															<Button
+																variant="ghost"
+																size="icon-sm"
+																onClick={() => {
+																	setEditingId(null);
+																	setDraftRow(null);
+																}}
+															>
+																<ClearIcon sx={iconSetting} />
+															</Button>
+														</>
+													) : (
+														<Button
+															variant="ghost"
+															size="icon-sm"
+															onClick={() => {
+																setEditingId(item.uid);
+																setDraftRow({ ...item }); // 🔑 snapshot
+															}}
+														>
+															<EditIcon sx={iconSetting} />
+														</Button>
+													)}
+												</TableCell>
+											)}
+										</TableRow>
+									);
+								})
 							) : (
 								<TableRow>
 									<TableCell
@@ -350,7 +389,7 @@ export function DataTable<T>(props: DataTableProps<T>) {
 					</Button>
 					{getPaginationRange(
 						table.getState().pagination.pageIndex + 1,
-						props.pagination?.totalPages ?? 1,
+						props.pageCount ?? 1,
 						3
 					).map((page) => (
 						<Button
