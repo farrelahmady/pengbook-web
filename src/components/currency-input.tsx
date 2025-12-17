@@ -34,7 +34,7 @@ export function CurrencyInput({ value, onCommit }: CurrencyInputProps) {
 				setText(e.target.value);
 			}}
 			onFocus={() => {
-				setText(convertFromRupiah(text).toString().replace(".", ","));
+				setText(convertFromRupiah(text)?.toString().replace(".", ",") ?? "");
 			}}
 			onBlur={() => {
 				const parsed = convertFromRupiah(text);

@@ -28,6 +28,8 @@ import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown";
 import EditIcon from "@mui/icons-material/Edit";
 import ClearIcon from "@mui/icons-material/Clear";
 import CheckIcon from "@mui/icons-material/Check";
+import SaveIcon from "@mui/icons-material/Save";
+import AddIcon from "@mui/icons-material/Add";
 import { convertToRupiah, iconSetting } from "@/lib/utils";
 import moment from "moment";
 import { DatePicker } from "./date-picker";
@@ -143,8 +145,10 @@ export function QueryDataTable<T extends { uid: string }>(
 	const saveMutation = useMutation({
 		mutationFn: props.onSave!,
 		onSuccess: async () => {
+			console.log("Save successful");
+
 			await queryClient.invalidateQueries({
-				queryKey: props.queryKeyBase,
+				queryKey: [...props.queryKeyBase, pagination, sorting],
 				exact: false,
 			});
 		},
@@ -235,29 +239,36 @@ export function DataTable<T extends RowBase>(props: DataTableProps<T>) {
 						value={value as any}
 						onChange={(v) => {
 							setChangeSet((prev) => {
+								const status = getRowStatus(item, changeSet);
 								const next: ChangeSet<T> = {
 									added: new Map(prev.added),
 									updated: new Map(prev.updated),
 									deleted: new Set(prev.deleted),
 								};
 
-								const original = props.items.find((r) => r.uid === item.uid);
-								if (!original) return next;
+								if (status === "new") {
+									const existing = next.added.get(item.uid)!;
+									(existing as any)[c.key] = v;
+									next.added.set(item.uid, existing);
+								} else if (status === "updated") {
+									const original = props.items.find((r) => r.uid === item.uid);
+									if (!original) return next;
 
-								const patch = {
-									...(next.updated.get(item.uid) ?? {}),
-								} as Partial<T>;
+									const patch = {
+										...(next.updated.get(item.uid) ?? {}),
+									} as Partial<T>;
 
-								if (original[c.key] === v) {
-									delete patch[c.key];
-								} else {
-									patch[c.key] = v as T[keyof T];
-								}
+									if (original[c.key] === v) {
+										delete patch[c.key];
+									} else {
+										patch[c.key] = v as T[keyof T];
+									}
 
-								if (Object.keys(patch).length === 0) {
-									next.updated.delete(item.uid);
-								} else {
-									next.updated.set(item.uid, patch);
+									if (Object.keys(patch).length === 0) {
+										next.updated.delete(item.uid);
+									} else {
+										next.updated.set(item.uid, patch);
+									}
 								}
 
 								return next;
@@ -304,239 +315,288 @@ export function DataTable<T extends RowBase>(props: DataTableProps<T>) {
 		return "existing";
 	}
 
+	function addRow() {
+		const newRow: T = { uid: crypto.randomUUID() } as T;
+
+		setChangeSet((prev) => {
+			const next: ChangeSet<T> = {
+				added: new Map(prev.added),
+				updated: new Map(prev.updated),
+				deleted: new Set(prev.deleted),
+			};
+			next.added.set(newRow.uid, newRow);
+			return next;
+		});
+	}
+
 	return (
-		<div className="w-full flex flex-col">
-			<div className="border rounded-lg overflow-hidden">
-				<div className="overflow-x-auto">
-					<Table className="w-full min-w-max">
-						<TableHeader>
-							{table.getHeaderGroups().map((headerGroup) => (
-								<TableRow key={headerGroup.id}>
-									{headerGroup.headers.map((header) => {
-										const meta = (header.column.columnDef.meta ?? {}) as any;
-
-										return (
-											<TableHead
-												onMouseDown={() => {
-													header.column.toggleSorting(
-														header.column.getIsSorted() === "asc"
-													);
-												}}
-												key={header.id}
-												style={{
-													width: header.getSize() ?? "auto",
-													position: meta.sticky ? "sticky" : "relative",
-													right: meta.sticky ? 0 : undefined,
-													zIndex: meta.sticky ? 5 : undefined,
-													background: "var(--background)",
-												}}
-											>
-												{header.isPlaceholder
-													? null
-													: flexRender(
-															header.column.columnDef.header,
-															header.getContext()
-													  )}
-											</TableHead>
-										);
-									})}
-									{props.editable && (
-										<TableHead
-											style={{ width: 50, position: "sticky", right: 0 }}
-										>
-											Action
-										</TableHead>
-									)}
-								</TableRow>
-							))}
-						</TableHeader>
-						<TableBody>
-							{table.getRowModel().rows?.length ? (
-								table.getRowModel().rows.map((row) => {
-									const item = row.original as T;
-									const status = getRowStatus(item, changeSet);
-									return (
-										<TableRow
-											key={item.uid}
-											data-state={row.getIsSelected() && "selected"}
-											data-status={status}
-											className={
-												status === "new"
-													? "bg-green-50"
-													: status === "updated"
-													? "bg-yellow-50"
-													: undefined
-											}
-										>
-											{row.getVisibleCells().map((cell) => {
-												const meta = (cell.column.columnDef.meta ?? {}) as any;
-
-												return (
-													<TableCell
-														key={cell.id}
-														style={{
-															width: cell.column.getSize(),
-															position: meta.sticky ? "sticky" : "relative",
-															right: meta.sticky ? 0 : undefined,
-															zIndex: meta.sticky ? 5 : undefined,
-															background: meta.sticky
-																? "var(--background)"
-																: undefined,
-															boxShadow: meta.sticky
-																? "-4px 0 8px rgba(0, 0, 0, 0.08)"
-																: undefined,
-															backdropFilter: meta.sticky
-																? "blur(2px)"
-																: undefined,
-														}}
-													>
-														{flexRender(
-															cell.column.columnDef.cell,
-															cell.getContext()
-														)}
-													</TableCell>
-												);
-											})}
-											{props.editable && (
-												<TableCell
-													style={{
-														width: 50,
-														position: "sticky",
-														right: 0,
-														boxShadow: "-2px 0 8px rgba(0, 0, 0, 0.08)",
-														backdropFilter: "blur(1px)",
-														textAlign: "center",
-													}}
-												>
-													{(() => {
-														const patch = changeSet.updated.get(item.uid);
-
-														// 🔹 ROW TIDAK ADA PERUBAHAN
-														if (!patch) {
-															return (
-																<Button
-																	variant="ghost"
-																	size="icon-sm"
-																	title="No changes"
-																	onClick={() => {
-																		setChangeSet((prev) => {
-																			const next = structuredClone(prev);
-																			next.updated.set(item.uid, {}); // 👈 trigger edit mode
-																			return next;
-																		});
-																	}}
-																>
-																	<EditIcon sx={iconSetting} />
-																</Button>
-															);
-														}
-
-														const fullRow: T = {
-															...item,
-															...patch,
-														};
-
-														// 🔹 ROW ADA PERUBAHAN
-														return (
-															<>
-																{/* SAVE PER ROW */}
-																<Button
-																	variant="ghost"
-																	size="icon-sm"
-																	onClick={async () => {
-																		await props.onSave?.({
-																			add: [],
-																			update: [fullRow],
-																		});
-
-																		// bersihkan changeset row ini
-																		setChangeSet((prev) => {
-																			const next = structuredClone(prev);
-																			next.updated.delete(item.uid);
-																			return next;
-																		});
-																	}}
-																>
-																	<CheckIcon sx={iconSetting} />
-																</Button>
-
-																{/* REVERT PER ROW */}
-																<Button
-																	variant="ghost"
-																	size="icon-sm"
-																	onClick={() => {
-																		setChangeSet((prev) => {
-																			const next = structuredClone(prev);
-																			next.updated.delete(item.uid);
-																			return next;
-																		});
-																	}}
-																>
-																	<ClearIcon sx={iconSetting} />
-																</Button>
-															</>
-														);
-													})()}
-												</TableCell>
-											)}
-										</TableRow>
-									);
-								})
-							) : (
-								<TableRow>
-									<TableCell
-										colSpan={props.columns.length}
-										className="h-24 text-center"
-									>
-										No results.
-									</TableCell>
-								</TableRow>
-							)}
-						</TableBody>
-					</Table>
+		<div className="w-full flex flex-col bg-secondary/50 rounded-md p-4">
+			<div className="flex justify-between items-end border-b pb-2">
+				<div className="flex gap-3">
+					<h3 className="text-2xl font-bold">{props.title?.toString()}</h3>
+				</div>
+				<div className="flex gap-1">
+					<Button variant={"primary"} onClick={addRow}>
+						<AddIcon sx={iconSetting} />
+						New
+					</Button>
+					{/* {rows.some((r) => r.status === "new" || r.status === "updated") && ( */}
+					<Button variant={"primary"}>
+						<SaveIcon sx={iconSetting} /> Save All
+					</Button>
+					{/* )} */}
 				</div>
 			</div>
+			<div className="w-full flex flex-col">
+				<div className="border rounded-lg overflow-hidden">
+					<div className="overflow-x-auto">
+						<Table className="w-full min-w-max">
+							<TableHeader>
+								{table.getHeaderGroups().map((headerGroup) => (
+									<TableRow key={headerGroup.id}>
+										{headerGroup.headers.map((header) => {
+											const meta = (header.column.columnDef.meta ?? {}) as any;
 
-			<div className="flex items-center justify-end space-x-2 py-4">
-				<div className="text-muted-foreground flex-1 text-sm">
-					{table.getFilteredSelectedRowModel().rows.length} of{" "}
-					{table.getFilteredRowModel().rows.length} row(s) selected.
+											return (
+												<TableHead
+													onMouseDown={() => {
+														header.column.toggleSorting(
+															header.column.getIsSorted() === "asc"
+														);
+													}}
+													key={header.id}
+													style={{
+														width: header.getSize() ?? "auto",
+														position: meta.sticky ? "sticky" : "relative",
+														right: meta.sticky ? 0 : undefined,
+														zIndex: meta.sticky ? 5 : undefined,
+														background: "var(--background)",
+													}}
+												>
+													{header.isPlaceholder
+														? null
+														: flexRender(
+																header.column.columnDef.header,
+																header.getContext()
+														  )}
+												</TableHead>
+											);
+										})}
+										{props.editable && (
+											<TableHead
+												style={{ width: 50, position: "sticky", right: 0 }}
+											>
+												Action
+											</TableHead>
+										)}
+									</TableRow>
+								))}
+							</TableHeader>
+							<TableBody>
+								{table.getRowModel().rows?.length ? (
+									table.getRowModel().rows.map((row) => {
+										const item = row.original as T;
+										const status = getRowStatus(item, changeSet);
+										return (
+											<TableRow
+												key={item.uid}
+												data-state={row.getIsSelected() && "selected"}
+												data-status={status}
+												className={
+													status === "new"
+														? "bg-green-50"
+														: status === "updated"
+														? "bg-yellow-50"
+														: undefined
+												}
+											>
+												{row.getVisibleCells().map((cell) => {
+													const meta = (cell.column.columnDef.meta ??
+														{}) as any;
+
+													return (
+														<TableCell
+															key={cell.id}
+															style={{
+																width: cell.column.getSize(),
+																position: meta.sticky ? "sticky" : "relative",
+																right: meta.sticky ? 0 : undefined,
+																zIndex: meta.sticky ? 5 : undefined,
+																background: meta.sticky
+																	? "var(--background)"
+																	: undefined,
+																boxShadow: meta.sticky
+																	? "-4px 0 8px rgba(0, 0, 0, 0.08)"
+																	: undefined,
+																backdropFilter: meta.sticky
+																	? "blur(2px)"
+																	: undefined,
+															}}
+														>
+															{flexRender(
+																cell.column.columnDef.cell,
+																cell.getContext()
+															)}
+														</TableCell>
+													);
+												})}
+												{props.editable && (
+													<TableCell
+														style={{
+															width: 50,
+															position: "sticky",
+															right: 0,
+															boxShadow: "-2px 0 8px rgba(0, 0, 0, 0.08)",
+															backdropFilter: "blur(1px)",
+															textAlign: "center",
+														}}
+													>
+														{(() => {
+															const patch =
+																changeSet.updated.get(item.uid) ||
+																changeSet.added.get(item.uid);
+															const status = getRowStatus(item, changeSet);
+
+															// 🔹 ROW TIDAK ADA PERUBAHAN
+															if (!patch) {
+																return (
+																	<Button
+																		variant="ghost"
+																		size="icon-sm"
+																		title="No changes"
+																		onClick={() => {
+																			setChangeSet((prev) => {
+																				const next = structuredClone(prev);
+																				next.updated.set(item.uid, {}); // 👈 trigger edit mode
+																				return next;
+																			});
+																		}}
+																	>
+																		<EditIcon sx={iconSetting} />
+																	</Button>
+																);
+															}
+
+															const fullRow: T = {
+																...item,
+																...patch,
+															};
+
+															// 🔹 ROW ADA PERUBAHAN
+															return (
+																<>
+																	{/* SAVE PER ROW */}
+																	<Button
+																		variant="ghost"
+																		size="icon-sm"
+																		onClick={async () => {
+																			if (status === "new") {
+																				await props.onSave?.({
+																					add: [fullRow],
+																					update: [],
+																				});
+
+																				// bersihkan changeset row ini
+																				setChangeSet((prev) => {
+																					const next = structuredClone(prev);
+																					next.added.delete(item.uid);
+																					return next;
+																				});
+																			} else if (status === "updated") {
+																				await props.onSave?.({
+																					add: [],
+																					update: [fullRow],
+																				});
+																				// bersihkan changeset row ini
+																				setChangeSet((prev) => {
+																					const next = structuredClone(prev);
+																					next.updated.delete(item.uid);
+																					return next;
+																				});
+																			}
+																		}}
+																	>
+																		<CheckIcon sx={iconSetting} />
+																	</Button>
+
+																	{/* REVERT PER ROW */}
+																	<Button
+																		variant="ghost"
+																		size="icon-sm"
+																		onClick={() => {
+																			setChangeSet((prev) => {
+																				const next = structuredClone(prev);
+																				next.updated.delete(item.uid);
+																				return next;
+																			});
+																		}}
+																	>
+																		<ClearIcon sx={iconSetting} />
+																	</Button>
+																</>
+															);
+														})()}
+													</TableCell>
+												)}
+											</TableRow>
+										);
+									})
+								) : (
+									<TableRow>
+										<TableCell
+											colSpan={props.columns.length}
+											className="h-24 text-center"
+										>
+											No results.
+										</TableCell>
+									</TableRow>
+								)}
+							</TableBody>
+						</Table>
+					</div>
 				</div>
-				<div className="space-x-2">
-					<Button
-						variant="primary"
-						size="sm"
-						onClick={() => table.previousPage()}
-						disabled={!table.getCanPreviousPage()}
-					>
-						Previous
-					</Button>
-					{getPaginationRange(
-						table.getState().pagination.pageIndex + 1,
-						props.pageCount ?? 1,
-						3
-					).map((page) => (
+
+				<div className="flex items-center justify-end space-x-2 py-4">
+					<div className="text-muted-foreground flex-1 text-sm">
+						{table.getFilteredSelectedRowModel().rows.length} of{" "}
+						{table.getFilteredRowModel().rows.length} row(s) selected.
+					</div>
+					<div className="space-x-2">
 						<Button
-							key={page}
-							variant={
-								page === table.getState().pagination.pageIndex + 1
-									? "primary"
-									: "ghost"
-							}
+							variant="primary"
 							size="sm"
-							onClick={() => table.setPageIndex(page - 1)}
+							onClick={() => table.previousPage()}
+							disabled={!table.getCanPreviousPage()}
 						>
-							{page}
+							Previous
 						</Button>
-					))}
-					<Button
-						variant="primary"
-						size="sm"
-						onClick={() => table.nextPage()}
-						disabled={!table.getCanNextPage()}
-					>
-						Next
-					</Button>
+						{getPaginationRange(
+							table.getState().pagination.pageIndex + 1,
+							props.pageCount ?? 1,
+							3
+						).map((page) => (
+							<Button
+								key={page}
+								variant={
+									page === table.getState().pagination.pageIndex + 1
+										? "primary"
+										: "ghost"
+								}
+								size="sm"
+								onClick={() => table.setPageIndex(page - 1)}
+							>
+								{page}
+							</Button>
+						))}
+						<Button
+							variant="primary"
+							size="sm"
+							onClick={() => table.nextPage()}
+							disabled={!table.getCanNextPage()}
+						>
+							Next
+						</Button>
+					</div>
 				</div>
 			</div>
 		</div>
