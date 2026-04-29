@@ -1,20 +1,13 @@
 import { cn } from "@/lib/utils";
 
 interface TopbarProps {
-  title: string;
   subtitle?: string;
   right?: React.ReactNode;
   children?: React.ReactNode; // slot untuk summary strip, dll
   className?: string;
 }
 
-export function Topbar({
-  title,
-  subtitle,
-  right,
-  children,
-  className,
-}: TopbarProps) {
+export function Topbar({ subtitle, right, children, className }: TopbarProps) {
   return (
     <div
       className={cn("bg-secondary-900 px-5 pt-12 pb-4", className)}
