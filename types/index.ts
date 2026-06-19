@@ -68,5 +68,11 @@ export interface CreateJournalDto {
 	lines: JournalLineDto[];
 }
 
+export interface JournalSummary {
+	totalDebit: number;
+	totalCredit: number;
+	transactionCount: number;
+}
+
 export type JournalMode = "basic" | "advanced";
 export type NavTab = "jurnal" | "aset" | "laporan" | "akun";
