@@ -5,51 +5,61 @@ import {
 	TopbarSummaryCard,
 } from "@/components/layout/topbar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LOCALE } from "@/lib/constants";
-import { formatRupiah } from "@/lib/utils";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 import { journalService } from "@/services/journal";
 import { useQuery } from "@tanstack/react-query";
+import { useFormatter, useTranslations } from "next-intl";
 
 export default function JournalTopbar() {
+	const t = useTranslations();
+	const format = useFormatter();
+	const currencyFormat = useCurrencyFormatter();
 	const { data, isLoading } = useQuery({
 		queryKey: ["journalSummary"],
 		queryFn: () => journalService.getTotalSummary(),
 	});
 
-	const labelPeriod = new Date().toLocaleDateString(LOCALE, {
+	const labelPeriod = format.dateTime(new Date(), {
 		month: "short",
 		year: "numeric",
 	});
+
 	return (
 		<>
 			{/* ── Topbar ── */}
 			<Topbar
-				subtitle="Buku Jurnal"
+				subtitle={t("journalPage.title")}
 				right={<PeriodBadge label={labelPeriod} />}
 			>
 				<div className="flex gap-2 mt-4">
 					<TopbarSummaryCard
-						label="Total Debit"
+						label={t("journalPage.summaryDebit.label")}
 						value={
 							isLoading ? (
 								<Skeleton className="w-16 h-3 rounded" />
 							) : (
-								formatRupiah(data?.totalDebit ?? 0, { compact: true })
+								currencyFormat(data?.totalDebit ?? 0, {
+									compact: true,
+									currency: "Rp",
+								})
 							)
 						}
 					/>
 					<TopbarSummaryCard
-						label="Total Kredit"
+						label={t("journalPage.summaryCredit.label")}
 						value={
 							isLoading ? (
 								<Skeleton className="w-16 h-3 rounded" />
 							) : (
-								formatRupiah(data?.totalCredit ?? 0, { compact: true })
+								currencyFormat(data?.totalCredit ?? 0, {
+									compact: true,
+									currency: "Rp",
+								})
 							)
 						}
 					/>
 					<TopbarSummaryCard
-						label="Transaksi"
+						label={t("journalPage.summarytransaction.label")}
 						value={
 							isLoading ? (
 								<Skeleton className="w-16 h-3 rounded" />

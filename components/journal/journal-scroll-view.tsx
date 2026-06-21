@@ -7,6 +7,7 @@ import { ReceiptText } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { journalService } from "@/services/journal";
 import { useInfiniteQuery } from "@tanstack/react-query";
+import { useFormatter } from "next-intl";
 
 interface JournalScrollViewProps {
 	startDate?: Date;
@@ -110,6 +111,8 @@ function JournalScrollViewContent({
 	isFetchingNextPage: boolean;
 	observerRef: React.RefObject<HTMLDivElement | null>;
 }) {
+	const format = useFormatter();
+
 	if (isLoading) {
 		return (
 			<div className="flex flex-col gap-2">
@@ -135,7 +138,12 @@ function JournalScrollViewContent({
 			{Array.from(grouped.entries()).map(([date, entries]) => (
 				<div key={date}>
 					<p className="text-[11px] font-semibold text-secondary-400 tracking-wide px-1 pt-3 pb-1.5">
-						{formatDateGroup(date)}
+						{format.dateTime(new Date(date), {
+							weekday: "long",
+							day: "numeric",
+							month: "long",
+							year: "numeric",
+						})}
 					</p>
 					<div className="flex flex-col gap-2">
 						{entries.map((journal) => (

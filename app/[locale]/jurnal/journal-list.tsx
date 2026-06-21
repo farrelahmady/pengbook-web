@@ -1,10 +1,12 @@
 "use client";
 import { JournalScrollView } from "@/components/journal/journal-scroll-view";
+import { useTranslations } from "next-intl";
 import { useCallback, useState } from "react";
 
-const FILTERS = ["Semua", "Hari ini", "Minggu ini", "Bulan ini"] as const;
+const FILTERS = ["all", "today", "week", "month"] as const;
 export default function JournalList() {
-	const [activeFilter, setActiveFilter] = useState<string>("Hari ini");
+	const t = useTranslations("journalPage");
+	const [activeFilter, setActiveFilter] = useState<string>("today");
 
 	const getDateRange = useCallback(() => {
 		const today = new Date();
@@ -21,21 +23,21 @@ export default function JournalList() {
 		let endDate: Date | undefined;
 
 		switch (activeFilter) {
-			case "Semua":
+			case "all":
 				startDate = undefined;
 				endDate = undefined;
 				break;
-			case "Hari ini":
+			case "today":
 				startDate = today;
 				endDate = endOfToday;
 				break;
-			case "Minggu ini":
+			case "week":
 				const firstDayOfWeek = new Date(today);
 				firstDayOfWeek.setDate(today.getDate() - today.getDay());
 				startDate = firstDayOfWeek;
 				endDate = endOfToday;
 				break;
-			case "Bulan ini":
+			case "month":
 				const firstDayOfMonth = new Date(
 					today.getFullYear(),
 					today.getMonth(),
@@ -66,14 +68,14 @@ export default function JournalList() {
 								: "bg-white text-secondary-500 border-secondary-200 hover:border-primary-300",
 						].join(" ")}
 					>
-						{f}
+						{t(`transactionFilterChips.${f}`)}
 					</button>
 				))}
 			</div>
 
 			{/* ── List ── */}
 			<div className="px-1">
-				<p className="section-label">Riwayat Transaksi</p>
+				<p className="section-label">{t("listTitle")}</p>
 				<JournalScrollView startDate={startDate} endDate={endDate} />
 			</div>
 		</>

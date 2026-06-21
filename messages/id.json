@@ -1,0 +1,27 @@
+{
+	"number": {
+		"thousand": "Rb",
+		"million": "Jt",
+		"billion": "M",
+		"trillion": "T"
+	},
+	"journalPage": {
+		"title": "Buku Jurnal",
+		"listTitle": "Riwayat Transaksi",
+		"summaryDebit": {
+			"label": "Total Debit"
+		},
+		"summaryCredit": {
+			"label": "Total Kredit"
+		},
+		"summarytransaction": {
+			"label": "Transaksi"
+		},
+		"transactionFilterChips": {
+			"all": "Semua",
+			"today": "Hari ini",
+			"week": "Minggu Ini",
+			"month": "Bulan Ini"
+		}
+	}
+}

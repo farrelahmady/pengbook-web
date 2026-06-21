@@ -2,37 +2,10 @@ import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { format, parseISO } from "date-fns";
 import { id } from "date-fns/locale";
+import { useTranslations } from "next-intl";
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
-}
-
-// ── Rupiah formatter ───────────────────────────────────────────────
-export function formatRupiah(
-	value: number | string,
-	options: { compact?: boolean; showSign?: boolean; decimals?: number } = {},
-): string {
-	const num = typeof value === "string" ? parseFloat(value) : value;
-	const { compact = false, showSign = false, decimals = 0 } = options;
-	if (isNaN(num)) return "Rp —";
-
-	const sign = showSign && num > 0 ? "+" : "";
-
-	if (compact) {
-		if (Math.abs(num) >= 1_000_000_000)
-			return `${sign}Rp ${(num / 1_000_000_000).toFixed(1)} M`;
-		if (Math.abs(num) >= 1_000_000)
-			return `${sign}Rp ${(num / 1_000_000).toFixed(1)} Jt`;
-		if (Math.abs(num) >= 1_000)
-			return `${sign}Rp ${(num / 1_000).toFixed(1)} Rb`;
-	}
-
-	const formatted = new Intl.NumberFormat("id-ID", {
-		minimumFractionDigits: decimals,
-		maximumFractionDigits: decimals,
-	}).format(Math.abs(num));
-
-	return `${sign}${num < 0 ? "-" : ""}Rp ${formatted}`;
 }
 
 export function formatNumber(value: number | string, decimals = 0): string {

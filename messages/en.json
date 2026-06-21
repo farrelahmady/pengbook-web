@@ -1,0 +1,27 @@
+{
+	"number": {
+		"thousand": "K",
+		"million": "M",
+		"billion": "B",
+		"trillion": "T"
+	},
+	"journalPage": {
+		"title": "Journal Book",
+		"listTitle": "Transaction History",
+		"summaryDebit": {
+			"label": "Total Debit"
+		},
+		"summaryCredit": {
+			"label": "Total Credit"
+		},
+		"summarytransaction": {
+			"label": "Transactions"
+		},
+		"transactionFilterChips": {
+			"all": "All",
+			"today": "Today",
+			"week": "This Week",
+			"month": "This Month"
+		}
+	}
+}

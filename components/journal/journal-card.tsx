@@ -1,17 +1,18 @@
 "use client";
 
 import { JournalEntry } from "@/types";
-import { formatTime, formatRupiah, parseDecimal } from "@/lib/utils";
+import { formatTime, parseDecimal } from "@/lib/utils";
 import { DrBadge, CrBadge, DrCrDot } from "@/components/shared/dbcr-badge";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "../ui/skeleton";
-import { Accordion } from "../ui/accordion";
+import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 
 interface JournalCardProps {
 	journal: JournalEntry;
 }
 
 export function JournalCard({ journal }: JournalCardProps) {
+	const currencyFormat = useCurrencyFormatter();
 	// Hitung total debit utama untuk tampilan amount
 	const totalDebit = journal.lines.reduce(
 		(s, l) => s + parseDecimal(l.debit),
@@ -45,7 +46,7 @@ export function JournalCard({ journal }: JournalCardProps) {
 						)}
 					>
 						{isInflow ? "+" : "-"}
-						{formatRupiah(displayAmount, { compact: true })}
+						{currencyFormat(displayAmount, { compact: true })}
 					</p>
 				</div>
 			</div>
@@ -76,7 +77,7 @@ export function JournalCard({ journal }: JournalCardProps) {
 										isDr ? "text-danger-600" : "text-success-600",
 									)}
 								>
-									{formatRupiah(amount, { compact: true })}
+									{currencyFormat(amount, { compact: true })}
 								</span>
 							</div>
 						</div>
