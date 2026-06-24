@@ -31,6 +31,10 @@ function formatEta(seconds: number): string {
 export function TransferProgressToast() {
 	const { transfers, cancel, pause, resume } = useTransferManager();
 
+	const toastCancel = (p: any) => {
+		toast.info(`${p.label} dibatalkan`);
+	};
+
 	useEffect(() => {
 		for (const t of transfers) {
 			const action = t.type === "download" ? "Download" : "Upload";
@@ -52,7 +56,6 @@ export function TransferProgressToast() {
 			}
 
 			if (t.status === "canceled") {
-				toast.info(`${label} dibatalkan`, { id: t.id });
 				continue;
 			}
 
@@ -108,8 +111,7 @@ export function TransferProgressToast() {
 					label: <XCircleIcon className="size-4" />,
 					onClick: () => {
 						if (t.status === "running") {
-							console.log("Toast Cancelled");
-							toast.info(`${label} dibatalkan`, { id: t.id });
+							toastCancel({ label, id: t.id });
 							cancel(t.id);
 						}
 					},

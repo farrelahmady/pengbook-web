@@ -146,7 +146,6 @@ export class TransferManager {
 
 	/** Aborts and removes a transfer by ID. */
 	cancel(id: string) {
-		console.log("Cancel From Task Manager");
 		this.tasks.get(id)?.cancel();
 		this.tasks.delete(id);
 	}

@@ -127,13 +127,11 @@ export function useTransferManager(client?: HttpClient) {
 			},
 			onError: ({ id }) => {
 				// Keep failed transfer visible longer for user to see the error
-				setTimeout(() => {
-					setTransfers((prev) => {
-						const next = new Map(prev);
-						next.delete(id);
-						return next;
-					});
-				}, 5000);
+				setTransfers((prev) => {
+					const next = new Map(prev);
+					next.delete(id);
+					return next;
+				});
 			},
 		});
 

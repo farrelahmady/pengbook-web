@@ -141,7 +141,6 @@ export function createDownloadTask(params: {
 		},
 
 		cancel() {
-			console.log("Task being cancelled");
 			controller.abort();
 		},
 	};
