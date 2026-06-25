@@ -27,6 +27,12 @@
 		"emptyTitle": "No transactions yet",
 		"emptyDescription": "Tap the New Transaction button to record your first journal entry.",
 		"loadingMore": "Loading more journals...",
+		"download": {
+			"button": "Download Transactions",
+			"toastLoading": "Downloading transactions...",
+			"toastSuccess": "Transactions downloaded successfully",
+			"toastError": "Failed to download transactions"
+		},
 		"sheet": {
 			"title": "New Transaction",
 			"modes": {

@@ -27,6 +27,12 @@
 		"emptyTitle": "Belum ada transaksi",
 		"emptyDescription": "Tap tombol Buat Transaksi untuk mencatat jurnal pertama Anda.",
 		"loadingMore": "Memuat lebih banyak jurnal...",
+		"download": {
+			"button": "Download Transaksi",
+			"toastLoading": "Mendownload transaksi...",
+			"toastSuccess": "Transaksi berhasil didownload",
+			"toastError": "Gagal mendownload transaksi"
+		},
 		"sheet": {
 			"title": "Buat Transaksi",
 			"modes": {

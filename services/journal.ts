@@ -73,4 +73,39 @@ export const journalService = {
 		// Simulate processing 5 entries from file
 		return Promise.resolve({ count: 5 });
 	},
+
+	downloadTransactions: async (): Promise<void> => {
+		// Simulate API call
+		await new Promise((resolve) => setTimeout(resolve, 1500));
+
+		// Generate CSV from dummy data
+		const headers = ["Tanggal", "Deskripsi", "Akun", "Debit", "Kredit"];
+		const rows: string[][] = [];
+
+		for (const journal of dummyJournals) {
+			for (const line of journal.lines) {
+				rows.push([
+					journal.date.slice(0, 10),
+					journal.description ?? "",
+					`${line.account?.code ?? ""} · ${line.account?.name ?? ""}`,
+					line.debit !== "0" ? line.debit : "",
+					line.credit !== "0" ? line.credit : "",
+				]);
+			}
+		}
+
+		const csvContent = [headers, ...rows]
+			.map((row) => row.map((cell) => `"${cell}"`).join(","))
+			.join("\n");
+
+		const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+		const url = URL.createObjectURL(blob);
+		const a = document.createElement("a");
+		a.href = url;
+		a.download = `transaksi-${new Date().toISOString().slice(0, 10)}.csv`;
+		document.body.appendChild(a);
+		a.click();
+		document.body.removeChild(a);
+		URL.revokeObjectURL(url);
+	},
 };
