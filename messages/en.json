@@ -23,5 +23,19 @@
 			"week": "This Week",
 			"month": "This Month"
 		}
+	},
+	"assetPage": {
+		"title": "Asset List",
+		"sectionTitle": "Asset Groups",
+		"summaryTotalAsset": {
+			"label": "Total Assets",
+			"sub": "active accounts"
+		},
+		"summaryCurrentAsset": {
+			"label": "Current Assets",
+			"sub": "Cash + Bank"
+		},
+		"emptyTitle": "No assets yet",
+		"emptyDescription": "Add asset accounts to start tracking your wealth."
 	}
 }

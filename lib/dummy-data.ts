@@ -1,4 +1,4 @@
-import { JournalEntry, ChartOfAccountWithChildren } from "@/types";
+import { JournalEntry, ChartOfAccountWithChildren, AssetSummary } from "@/types";
 
 // ── Dummy Journal Entries ──────────────────────────────────────────────────
 export const dummyJournals: JournalEntry[] = [
@@ -801,4 +801,56 @@ export const dummyCashFlow = {
 		total: 50000000,
 	},
 	netCashFlow: 44300000,
+};
+
+// ── Dummy Asset Summary ─────────────────────────────────────────────────────
+export const dummyAssetSummary: AssetSummary = {
+	totalAsset: 28500000,
+	currentAsset: 18200000,
+	groups: [
+		{
+			id: "g1",
+			code: "1100",
+			name: "Aset Lancar",
+			icon: "wallet",
+			totalBalance: 18200000,
+			accounts: [
+				{ id: "a1", code: "1101", name: "Kas", balance: 5500000, isPosting: true },
+				{ id: "a2", code: "1102", name: "Bank BCA", balance: 8700000, isPosting: true },
+				{ id: "a3", code: "1103", name: "Bank Mandiri", balance: 3000000, isPosting: true },
+				{ id: "a4", code: "1110", name: "Piutang Usaha", balance: 1000000, isPosting: true },
+			],
+		},
+		{
+			id: "g2",
+			code: "1200",
+			name: "Aset Tetap",
+			icon: "building",
+			totalBalance: 9500000,
+			accounts: [
+				{ id: "a5", code: "1201", name: "Peralatan Kantor", balance: 6000000, isPosting: true },
+				{ id: "a6", code: "1202", name: "Kendaraan", balance: 5000000, isPosting: true },
+				{ id: "a7", code: "1209", name: "Akum. Penyusutan", balance: -1500000, isPosting: true },
+			],
+		},
+		{
+			id: "g3",
+			code: "1300",
+			name: "Aset Lain-lain",
+			icon: "clock",
+			totalBalance: 800000,
+			accounts: [
+				{ id: "a8", code: "1301", name: "Uang Muka", balance: 500000, isPosting: true },
+				{ id: "a9", code: "1302", name: "Biaya Dibayar Dimuka", balance: 300000, isPosting: true },
+			],
+		},
+		{
+			id: "g4",
+			code: "1050",
+			name: "Persediaan",
+			icon: "package",
+			totalBalance: 0,
+			accounts: [],
+		},
+	],
 };

@@ -80,12 +80,14 @@ export function useTransferManager(client?: HttpClient) {
 				setTransfers((prev) => {
 					const next = new Map(prev);
 					const existing = next.get(id);
+					console.log("Existing OnStatusChange", existing);
 					next.set(id, {
 						id,
 						type,
 						status,
 						progress: existing?.progress,
 						result: existing?.result,
+						filename: existing?.filename,
 					});
 					return next;
 				});
@@ -94,6 +96,7 @@ export function useTransferManager(client?: HttpClient) {
 				setTransfers((prev) => {
 					const next = new Map(prev);
 					const existing = next.get(progress.id);
+
 					if (existing) {
 						next.set(progress.id, {
 							...existing,
@@ -108,6 +111,8 @@ export function useTransferManager(client?: HttpClient) {
 				setTransfers((prev) => {
 					const next = new Map(prev);
 					const existing = next.get(id);
+
+					console.log("Existing", existing);
 					if (existing) {
 						next.set(id, {
 							...existing,

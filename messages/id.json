@@ -23,5 +23,19 @@
 			"week": "Minggu Ini",
 			"month": "Bulan Ini"
 		}
+	},
+	"assetPage": {
+		"title": "Daftar Aset",
+		"sectionTitle": "Kelompok Aset",
+		"summaryTotalAsset": {
+			"label": "Total Aset",
+			"sub": "akun aktif"
+		},
+		"summaryCurrentAsset": {
+			"label": "Aset Lancar",
+			"sub": "Kas + Bank"
+		},
+		"emptyTitle": "Belum ada aset",
+		"emptyDescription": "Tambahkan akun aset untuk mulai melacak kekayaan Anda."
 	}
 }

@@ -32,7 +32,7 @@ export function TransferProgressToast() {
 	const { transfers, cancel, pause, resume } = useTransferManager();
 
 	const toastCancel = (p: any) => {
-		toast.info(`${p.label} dibatalkan`);
+		toast.warning(`${p.label} dibatalkan`);
 	};
 
 	useEffect(() => {
@@ -46,6 +46,7 @@ export function TransferProgressToast() {
 				toast.success(`${label} selesai`, {
 					id: t.id,
 					description: t.progress ? formatBytes(t.progress.loaded) : undefined,
+					cancel: undefined,
 				});
 				continue;
 			}
@@ -109,7 +110,7 @@ export function TransferProgressToast() {
 				description: `${percent}%${description ? ` · ${description}` : ""}`,
 				cancel: {
 					label: <XCircleIcon className="size-4" />,
-					onClick: () => {
+					onClick: (e) => {
 						if (t.status === "running") {
 							toastCancel({ label, id: t.id });
 							cancel(t.id);

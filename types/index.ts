@@ -76,3 +76,27 @@ export interface JournalSummary {
 
 export type JournalMode = "basic" | "advanced";
 export type NavTab = "jurnal" | "aset" | "laporan" | "akun";
+
+// Asset
+export interface AssetAccount {
+	id: string;
+	code: string;
+	name: string;
+	balance: number;
+	isPosting: boolean;
+}
+
+export interface AssetGroup {
+	id: string;
+	code: string;
+	name: string;
+	icon: string;
+	accounts: AssetAccount[];
+	totalBalance: number;
+}
+
+export interface AssetSummary {
+	totalAsset: number;
+	currentAsset: number;
+	groups: AssetGroup[];
+}
