@@ -24,6 +24,15 @@
 			"week": "This Week",
 			"month": "This Month"
 		},
+		"filter": {
+			"dateRange": "Date",
+			"coa": "Account",
+			"clear": "Reset",
+			"selectDateRange": "Select Date Range",
+			"from": "From",
+			"to": "To",
+			"selectAccount": "Select Account"
+		},
 		"emptyTitle": "No transactions yet",
 		"emptyDescription": "Tap the New Transaction button to record your first journal entry.",
 		"loadingMore": "Loading more journals...",
@@ -35,6 +44,7 @@
 		},
 		"sheet": {
 			"title": "New Transaction",
+			"editTitle": "Edit Transaction",
 			"modes": {
 				"basic": "Basic",
 				"advanced": "Advanced",

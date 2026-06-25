@@ -1,7 +1,7 @@
 "use client";
 import { JournalEntry } from "@/types";
 import { JournalCard, JournalCardSkeleton } from "./journal-card";
-import { formatDateGroup, parseDecimal } from "@/lib/utils";
+import { EditJournalSheet } from "./edit-journal-sheet";
 import { EmptyState } from "@/components/shared/empty-state";
 import { ReceiptText } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -12,6 +12,7 @@ import { useFormatter, useTranslations } from "next-intl";
 interface JournalScrollViewProps {
 	startDate?: Date;
 	endDate?: Date;
+	accountIds?: string[];
 }
 
 function groupByDate(journals: JournalEntry[]) {
@@ -27,30 +28,29 @@ function groupByDate(journals: JournalEntry[]) {
 export function JournalScrollView({
 	startDate,
 	endDate,
+	accountIds,
 }: JournalScrollViewProps) {
 	const observerRef = useRef<HTMLDivElement>(null);
-	const LIMIT = 3; // Number of journals to fetch per page
+	const LIMIT = 3;
+	const [selectedJournal, setSelectedJournal] = useState<JournalEntry | null>(
+		null,
+	);
+	const [editOpen, setEditOpen] = useState(false);
 
 	const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
 		useInfiniteQuery({
-			queryKey: ["journals", "scroll-view", { startDate, endDate }],
+			queryKey: ["journals", "scroll-view", { startDate, endDate, accountIds }],
 			queryFn: ({ pageParam }) => {
-				console.log("Fetching Journal for Page", pageParam);
-
 				return journalService.getAllScrollView({
 					page: pageParam,
 					limit: LIMIT,
+					startDate,
+					endDate,
+					accountIds,
 				});
 			},
 			initialPageParam: 1,
 			getNextPageParam: (lastPage, allPages) => {
-				console.log(
-					"Last Page Length:",
-					lastPage.length,
-					"All Pages Length:",
-					allPages.length,
-				);
-				// Stop paginating once the last page returns fewer items than the limit
 				if (!lastPage || lastPage.length < LIMIT) return undefined;
 				return allPages.length + 1;
 			},
@@ -83,6 +83,11 @@ export function JournalScrollView({
 		return () => observer.disconnect();
 	}, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
+	function handleJournalClick(journal: JournalEntry) {
+		setSelectedJournal(journal);
+		setEditOpen(true);
+	}
+
 	return (
 		<>
 			<div className="flex flex-col gap-2 px-3 pb-4">
@@ -92,8 +97,15 @@ export function JournalScrollView({
 					grouped={grouped}
 					isFetchingNextPage={isFetchingNextPage}
 					observerRef={observerRef}
+					onJournalClick={handleJournalClick}
 				/>
 			</div>
+
+			<EditJournalSheet
+				journal={selectedJournal}
+				open={editOpen}
+				onOpenChange={setEditOpen}
+			/>
 		</>
 	);
 }
@@ -104,12 +116,14 @@ function JournalScrollViewContent({
 	grouped,
 	isFetchingNextPage,
 	observerRef,
+	onJournalClick,
 }: {
 	isLoading: boolean;
 	journals: JournalEntry[];
 	grouped: Map<string, JournalEntry[]>;
 	isFetchingNextPage: boolean;
 	observerRef: React.RefObject<HTMLDivElement | null>;
+	onJournalClick: (journal: JournalEntry) => void;
 }) {
 	const format = useFormatter();
 	const t = useTranslations("journalPage");
@@ -148,7 +162,11 @@ function JournalScrollViewContent({
 					</p>
 					<div className="flex flex-col gap-2">
 						{entries.map((journal) => (
-							<JournalCard key={journal.id} journal={journal} />
+							<JournalCard
+								key={journal.id}
+								journal={journal}
+								onClick={() => onJournalClick(journal)}
+							/>
 						))}
 					</div>
 				</div>

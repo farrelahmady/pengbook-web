@@ -9,9 +9,10 @@ import { useCurrencyFormatter } from "@/hooks/use-currency-formatter";
 
 interface JournalCardProps {
 	journal: JournalEntry;
+	onClick?: () => void;
 }
 
-export function JournalCard({ journal }: JournalCardProps) {
+export function JournalCard({ journal, onClick }: JournalCardProps) {
 	const currencyFormat = useCurrencyFormatter();
 	// Hitung total debit utama untuk tampilan amount
 	const totalDebit = journal.lines.reduce(
@@ -27,7 +28,10 @@ export function JournalCard({ journal }: JournalCardProps) {
 	const displayAmount = Math.max(totalDebit, totalCredit);
 
 	return (
-		<div className="card-default shadow-card active:scale-[0.99] transition-transform cursor-pointer">
+		<div
+			onClick={onClick}
+			className="card-default shadow-card active:scale-[0.99] transition-transform cursor-pointer"
+		>
 			{/* Header */}
 			<div className="flex items-start justify-between px-4 pt-3.5 pb-3">
 				<div className="flex-1 min-w-0 pr-3">

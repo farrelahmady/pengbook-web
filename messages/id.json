@@ -24,6 +24,15 @@
 			"week": "Minggu Ini",
 			"month": "Bulan Ini"
 		},
+		"filter": {
+			"dateRange": "Tanggal",
+			"coa": "Akun",
+			"clear": "Reset",
+			"selectDateRange": "Pilih Rentang Tanggal",
+			"from": "Dari",
+			"to": "Sampai",
+			"selectAccount": "Pilih Akun"
+		},
 		"emptyTitle": "Belum ada transaksi",
 		"emptyDescription": "Tap tombol Buat Transaksi untuk mencatat jurnal pertama Anda.",
 		"loadingMore": "Memuat lebih banyak jurnal...",
@@ -35,6 +44,7 @@
 		},
 		"sheet": {
 			"title": "Buat Transaksi",
+			"editTitle": "Edit Transaksi",
 			"modes": {
 				"basic": "Basic",
 				"advanced": "Advanced",
