@@ -2,8 +2,10 @@
 import { CreateJournalSheet } from "@/components/journal/create-journal-sheet";
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export default function CreateJournal() {
+	const t = useTranslations("journalPage");
 	const [sheetOpen, setSheetOpen] = useState(false);
 
 	return (
@@ -18,7 +20,7 @@ export default function CreateJournal() {
                    active:scale-95 transition-transform no-tap"
 			>
 				<Plus size={18} strokeWidth={2.5} />
-				Buat Transaksi
+				{t("fab")}
 			</button>
 
 			{/* ── Sheet ── */}

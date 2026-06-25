@@ -8,6 +8,7 @@
 	"journalPage": {
 		"title": "Journal Book",
 		"listTitle": "Transaction History",
+		"fab": "New Transaction",
 		"summaryDebit": {
 			"label": "Total Debit"
 		},
@@ -22,6 +23,70 @@
 			"today": "Today",
 			"week": "This Week",
 			"month": "This Month"
+		},
+		"emptyTitle": "No transactions yet",
+		"emptyDescription": "Tap the New Transaction button to record your first journal entry.",
+		"loadingMore": "Loading more journals...",
+		"sheet": {
+			"title": "New Transaction",
+			"modes": {
+				"basic": "Basic",
+				"advanced": "Advanced",
+				"upload": "Upload"
+			}
+		},
+		"basic": {
+			"date": "Date",
+			"description": "Description",
+			"descriptionPlaceholder": "e.g. Buy printer ink...",
+			"fromAccount": "From (Credit Account)",
+			"fromPlaceholder": "Select source account...",
+			"toAccount": "To (Debit Account)",
+			"toPlaceholder": "Select destination account...",
+			"amount": "Amount",
+			"hint": "Journal is automatically created:",
+			"hintDetail": "DR: To Account | CR: From Account",
+			"submit": "Save Transaction",
+			"toastLoading": "Saving transaction...",
+			"toastSuccess": "Transaction saved successfully",
+			"toastError": "Failed to save transaction",
+			"toastValidation": "Please fill in all fields",
+			"toastSameAccount": "Source and destination accounts must be different"
+		},
+		"advanced": {
+			"date": "Date",
+			"description": "Description",
+			"descriptionPlaceholder": "Transaction description...",
+			"lines": "Journal Lines",
+			"account": "Account",
+			"accountPlaceholder": "Select account",
+			"debit": "Debit",
+			"credit": "Credit",
+			"addRow": "Add Line",
+			"balance": "Journal Balance",
+			"balanced": "✓ Balanced",
+			"submit": "Save Journal",
+			"toastLoading": "Saving journal...",
+			"toastSuccess": "Journal saved successfully",
+			"toastError": "Failed to save journal",
+			"toastUnbalanced": "Total debit must equal total credit"
+		},
+		"upload": {
+			"title": "Upload File",
+			"description": "Upload a CSV or Excel file to add journals in bulk.",
+			"downloadTemplate": "Download Template",
+			"dragDrop": "Drag & drop file here",
+			"or": "or",
+			"browse": "Choose File",
+			"acceptedFormats": "Format: CSV, XLSX (Max 5MB)",
+			"selectedFile": "Selected file:",
+			"remove": "Remove",
+			"submit": "Upload & Process",
+			"toastLoading": "Uploading file...",
+			"toastSuccess": "File processed successfully",
+			"toastError": "Failed to process file",
+			"toastNoFile": "Please select a file first",
+			"toastInvalidFormat": "Invalid file format"
 		}
 	},
 	"assetPage": {

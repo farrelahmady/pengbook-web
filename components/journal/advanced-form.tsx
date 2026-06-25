@@ -5,6 +5,9 @@ import { Plus, Minus } from "lucide-react";
 import { formatNumber, parseDecimal } from "@/lib/utils";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
+import { useQueryClient } from "@tanstack/react-query";
+import { journalService } from "@/services/journal";
 
 const POSTING_ACCOUNTS = [
   { id: "a1", code: "1.01.01.01", name: "Mandiri - Main" },
@@ -28,12 +31,15 @@ interface AdvancedFormProps {
 }
 
 export function AdvancedForm({ onSuccess }: AdvancedFormProps) {
+  const t = useTranslations("journalPage.advanced");
+  const queryClient = useQueryClient();
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [description, setDesc] = useState("");
   const [lines, setLines] = useState<JournalLine[]>([
     { accountId: "", debit: "", credit: "" },
     { accountId: "", debit: "", credit: "" },
   ]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const totalDr = lines.reduce((s, l) => s + parseDecimal(l.debit), 0);
   const totalCr = lines.reduce((s, l) => s + parseDecimal(l.credit), 0);
@@ -54,13 +60,35 @@ export function AdvancedForm({ onSuccess }: AdvancedFormProps) {
     setLines((prev) => prev.filter((_, idx) => idx !== i));
   }
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!isBalanced) {
-      toast.error("Total debit harus sama dengan total kredit");
+      toast.error(t("toastUnbalanced"));
       return;
     }
-    toast.success("Jurnal berhasil disimpan");
-    onSuccess();
+
+    const toastId = toast.loading(t("toastLoading"));
+    setIsSubmitting(true);
+
+    try {
+      await journalService.create({
+        date: new Date(date).toISOString(),
+        description: description || undefined,
+        lines: lines.map((l) => ({
+          accountId: l.accountId,
+          debit: parseDecimal(l.debit),
+          credit: parseDecimal(l.credit),
+        })),
+      });
+
+      toast.success(t("toastSuccess"), { id: toastId });
+      queryClient.invalidateQueries({ queryKey: ["journals"] });
+      queryClient.invalidateQueries({ queryKey: ["journalSummary"] });
+      onSuccess();
+    } catch (err) {
+      toast.error(t("toastError"), { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const labelClass =
@@ -70,9 +98,9 @@ export function AdvancedForm({ onSuccess }: AdvancedFormProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Tanggal */}
+      {/* Date */}
       <div>
-        <label className={labelClass}>Tanggal</label>
+        <label className={labelClass}>{t("date")}</label>
         <input
           type="date"
           value={date}
@@ -81,12 +109,12 @@ export function AdvancedForm({ onSuccess }: AdvancedFormProps) {
         />
       </div>
 
-      {/* Deskripsi */}
+      {/* Description */}
       <div>
-        <label className={labelClass}>Deskripsi</label>
+        <label className={labelClass}>{t("description")}</label>
         <input
           type="text"
-          placeholder="Deskripsi transaksi..."
+          placeholder={t("descriptionPlaceholder")}
           value={description}
           onChange={(e) => setDesc(e.target.value)}
           className={inputClass}
@@ -95,11 +123,11 @@ export function AdvancedForm({ onSuccess }: AdvancedFormProps) {
 
       {/* Journal lines table */}
       <div>
-        <label className={labelClass}>Baris Jurnal</label>
+        <label className={labelClass}>{t("lines")}</label>
         <div className="border border-secondary-200 rounded-xl overflow-hidden">
           {/* Head */}
           <div className="grid grid-cols-[1fr_80px_80px_28px] gap-1 px-3 py-2 bg-secondary-50 border-b border-secondary-200">
-            {["Akun", "Debit", "Kredit", ""].map((h, i) => (
+            {[t("account"), t("debit"), t("credit"), ""].map((h, i) => (
               <span
                 key={i}
                 className={cn(
@@ -123,7 +151,7 @@ export function AdvancedForm({ onSuccess }: AdvancedFormProps) {
                 onChange={(e) => updateLine(i, "accountId", e.target.value)}
                 className="text-[11px] bg-secondary-50 border border-secondary-200 rounded-lg px-2 py-1.5 w-full appearance-none text-secondary-700 outline-none focus:border-primary-400"
               >
-                <option value="">Pilih akun</option>
+                <option value="">{t("accountPlaceholder")}</option>
                 {POSTING_ACCOUNTS.map((a) => (
                   <option key={a.id} value={a.id}>
                     {a.code}
@@ -165,7 +193,7 @@ export function AdvancedForm({ onSuccess }: AdvancedFormProps) {
                      hover:text-primary-500 transition-colors"
         >
           <Plus size={14} />
-          Tambah Baris
+          {t("addRow")}
         </button>
       </div>
 
@@ -179,12 +207,12 @@ export function AdvancedForm({ onSuccess }: AdvancedFormProps) {
         )}
       >
         <span className="text-[12px] font-semibold text-secondary-600">
-          Saldo Jurnal
+          {t("balance")}
         </span>
         <div className="flex gap-4 items-center">
           <div className="text-right">
             <p className="text-[9px] uppercase tracking-wide text-secondary-400">
-              Debit
+              {t("debit")}
             </p>
             <p className="font-mono text-[12px] font-semibold text-success-700">
               {formatNumber(totalDr)}
@@ -192,7 +220,7 @@ export function AdvancedForm({ onSuccess }: AdvancedFormProps) {
           </div>
           <div className="text-right">
             <p className="text-[9px] uppercase tracking-wide text-secondary-400">
-              Kredit
+              {t("credit")}
             </p>
             <p className="font-mono text-[12px] font-semibold text-danger-700">
               {formatNumber(totalCr)}
@@ -207,7 +235,7 @@ export function AdvancedForm({ onSuccess }: AdvancedFormProps) {
             {totalDr === 0 && totalCr === 0
               ? "—"
               : isBalanced
-                ? "✓ Balance"
+                ? t("balanced")
                 : `Δ ${formatNumber(Math.abs(totalDr - totalCr))}`}
           </div>
         </div>
@@ -216,14 +244,15 @@ export function AdvancedForm({ onSuccess }: AdvancedFormProps) {
       {/* Submit */}
       <button
         onClick={handleSubmit}
+        disabled={!isBalanced || isSubmitting}
         className={cn(
           "w-full font-semibold text-[15px] py-3.5 rounded-xl transition-all mt-1",
-          isBalanced
+          isBalanced && !isSubmitting
             ? "bg-primary-500 text-white active:scale-[0.98]"
             : "bg-secondary-100 text-secondary-400 cursor-not-allowed",
         )}
       >
-        Simpan Jurnal
+        {t("submit")}
       </button>
     </div>
   );

@@ -7,7 +7,7 @@ import { ReceiptText } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { journalService } from "@/services/journal";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { useFormatter } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 
 interface JournalScrollViewProps {
 	startDate?: Date;
@@ -112,6 +112,7 @@ function JournalScrollViewContent({
 	observerRef: React.RefObject<HTMLDivElement | null>;
 }) {
 	const format = useFormatter();
+	const t = useTranslations("journalPage");
 
 	if (isLoading) {
 		return (
@@ -127,8 +128,8 @@ function JournalScrollViewContent({
 		return (
 			<EmptyState
 				icon={ReceiptText}
-				title="Belum ada transaksi"
-				description="Tap tombol Buat Transaksi untuk mencatat jurnal pertama Anda."
+				title={t("emptyTitle")}
+				description={t("emptyDescription")}
 			/>
 		);
 	}
@@ -154,7 +155,7 @@ function JournalScrollViewContent({
 			))}
 			{isFetchingNextPage && (
 				<p className="text-center text-[12px] text-secondary-400 py-2">
-					Memuat lebih banyak jurnal...
+					{t("loadingMore")}
 				</p>
 			)}
 			<div ref={observerRef} className="h-1" />

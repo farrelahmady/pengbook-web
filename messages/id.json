@@ -8,6 +8,7 @@
 	"journalPage": {
 		"title": "Buku Jurnal",
 		"listTitle": "Riwayat Transaksi",
+		"fab": "Buat Transaksi",
 		"summaryDebit": {
 			"label": "Total Debit"
 		},
@@ -22,6 +23,70 @@
 			"today": "Hari ini",
 			"week": "Minggu Ini",
 			"month": "Bulan Ini"
+		},
+		"emptyTitle": "Belum ada transaksi",
+		"emptyDescription": "Tap tombol Buat Transaksi untuk mencatat jurnal pertama Anda.",
+		"loadingMore": "Memuat lebih banyak jurnal...",
+		"sheet": {
+			"title": "Buat Transaksi",
+			"modes": {
+				"basic": "Basic",
+				"advanced": "Advanced",
+				"upload": "Upload"
+			}
+		},
+		"basic": {
+			"date": "Tanggal",
+			"description": "Deskripsi",
+			"descriptionPlaceholder": "Contoh: Beli tinta printer...",
+			"fromAccount": "Dari (Akun Kredit)",
+			"fromPlaceholder": "Pilih akun asal...",
+			"toAccount": "Ke (Akun Debit)",
+			"toPlaceholder": "Pilih akun tujuan...",
+			"amount": "Jumlah",
+			"hint": "Jurnal dibentuk otomatis:",
+			"hintDetail": "DR: Akun Ke | CR: Akun Dari",
+			"submit": "Simpan Transaksi",
+			"toastLoading": "Menyimpan transaksi...",
+			"toastSuccess": "Transaksi berhasil disimpan",
+			"toastError": "Gagal menyimpan transaksi",
+			"toastValidation": "Lengkapi semua field terlebih dahulu",
+			"toastSameAccount": "Akun asal dan tujuan tidak boleh sama"
+		},
+		"advanced": {
+			"date": "Tanggal",
+			"description": "Deskripsi",
+			"descriptionPlaceholder": "Deskripsi transaksi...",
+			"lines": "Baris Jurnal",
+			"account": "Akun",
+			"accountPlaceholder": "Pilih akun",
+			"debit": "Debit",
+			"credit": "Kredit",
+			"addRow": "Tambah Baris",
+			"balance": "Saldo Jurnal",
+			"balanced": "✓ Balance",
+			"submit": "Simpan Jurnal",
+			"toastLoading": "Menyimpan jurnal...",
+			"toastSuccess": "Jurnal berhasil disimpan",
+			"toastError": "Gagal menyimpan jurnal",
+			"toastUnbalanced": "Total debit harus sama dengan total kredit"
+		},
+		"upload": {
+			"title": "Upload File",
+			"description": "Upload file CSV atau Excel untuk menambahkan jurnal secara massal.",
+			"downloadTemplate": "Download Template",
+			"dragDrop": "Seret & lepas file di sini",
+			"or": "atau",
+			"browse": "Pilih File",
+			"acceptedFormats": "Format: CSV, XLSX (Max 5MB)",
+			"selectedFile": "File terpilih:",
+			"remove": "Hapus",
+			"submit": "Upload & Proses",
+			"toastLoading": "Mengupload file...",
+			"toastSuccess": "File berhasil diproses",
+			"toastError": "Gagal memproses file",
+			"toastNoFile": "Pilih file terlebih dahulu",
+			"toastInvalidFormat": "Format file tidak valid"
 		}
 	},
 	"assetPage": {

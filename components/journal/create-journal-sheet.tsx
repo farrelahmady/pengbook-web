@@ -4,19 +4,22 @@ import { useState } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { BasicForm } from "./basic-form";
 import { AdvancedForm } from "./advanced-form";
+import { UploadForm } from "./upload-form";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface CreateJournalSheetProps {
   open: boolean;
   onOpenChange: (v: boolean) => void;
 }
 
-type Mode = "basic" | "advanced";
+type Mode = "basic" | "advanced" | "upload";
 
 export function CreateJournalSheet({
   open,
   onOpenChange,
 }: CreateJournalSheetProps) {
+  const t = useTranslations("journalPage.sheet");
   const [mode, setMode] = useState<Mode>("basic");
 
   return (
@@ -32,13 +35,13 @@ export function CreateJournalSheet({
         <div className="px-5 pt-3 pb-0">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-[17px] font-bold text-secondary-900">
-              Buat Transaksi
+              {t("title")}
             </h2>
           </div>
 
           {/* Mode toggle */}
           <div className="flex bg-secondary-100 rounded-xl p-1 gap-1 mb-4">
-            {(["basic", "advanced"] as Mode[]).map((m) => (
+            {(["basic", "advanced", "upload"] as Mode[]).map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
@@ -49,7 +52,7 @@ export function CreateJournalSheet({
                     : "text-secondary-400 hover:text-secondary-600",
                 )}
               >
-                {m === "basic" ? "Basic" : "Advanced"}
+                {t(`modes.${m}`)}
               </button>
             ))}
           </div>
@@ -59,10 +62,14 @@ export function CreateJournalSheet({
 
         {/* Form */}
         <div className="px-5 pb-8">
-          {mode === "basic" ? (
+          {mode === "basic" && (
             <BasicForm onSuccess={() => onOpenChange(false)} />
-          ) : (
+          )}
+          {mode === "advanced" && (
             <AdvancedForm onSuccess={() => onOpenChange(false)} />
+          )}
+          {mode === "upload" && (
+            <UploadForm onSuccess={() => onOpenChange(false)} />
           )}
         </div>
       </SheetContent>
