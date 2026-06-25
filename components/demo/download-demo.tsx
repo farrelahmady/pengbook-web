@@ -83,7 +83,7 @@ export function DownloadDemo() {
 				!savedRef.current.has(t.id)
 			) {
 				savedRef.current.add(t.id);
-				saveBlobAsFile(t.result, filename);
+				saveBlobAsFile(t.result, t.filename ?? filename);
 			}
 		}
 	}, [transfers, filename]);

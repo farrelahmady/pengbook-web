@@ -37,5 +37,75 @@
 		},
 		"emptyTitle": "Belum ada aset",
 		"emptyDescription": "Tambahkan akun aset untuk mulai melacak kekayaan Anda."
+	},
+	"reportPage": {
+		"title": "Laporan Keuangan",
+		"sectionTitle": "Semua Laporan",
+		"summaryNetIncome": {
+			"label": "Laba Bersih",
+			"sub": "L/R periode ini"
+		},
+		"summaryTotalAsset": {
+			"label": "Total Aset",
+			"sub": "Neraca"
+		},
+		"summaryNetCashFlow": {
+			"label": "Arus Kas Bersih",
+			"sub": "Operasional"
+		},
+		"summaryTrialBalance": {
+			"label": "Trial Balance",
+			"sub": "DR = CR"
+		},
+		"emptyTitle": "Belum ada laporan",
+		"emptyDescription": "Data laporan akan muncul setelah Anda memiliki transaksi.",
+		"trialBalance": {
+			"name": "Trial Balance",
+			"subtitle": "Neraca Saldo",
+			"export": "Ekspor Excel",
+			"headers": {
+				"account": "Akun",
+				"debit": "Debit",
+				"credit": "Kredit"
+			}
+		},
+		"reports": {
+			"incomeStatement": {
+				"name": "Laba Rugi",
+				"subtitle": "Income Statement",
+				"total": "Laba Bersih"
+			},
+			"balanceSheet": {
+				"name": "Neraca",
+				"subtitle": "Balance Sheet",
+				"assets": "Aset",
+				"totalAssets": "Total Aset",
+				"liabilities": "Liabilitas & Ekuitas",
+				"totalLiabEquity": "Total Liabilitas & Ekuitas"
+			},
+			"cashFlow": {
+				"name": "Arus Kas",
+				"subtitle": "Cash Flow Statement",
+				"operating": "Operasional",
+				"investing": "Investasi",
+				"financing": "Pendanaan",
+				"total": "Arus Kas Bersih"
+			}
+		}
+	},
+	"coaPage": {
+		"title": "Bagan Akun",
+		"sectionTitle": "Perkiraan",
+		"summaryTotal": {
+			"label": "Total"
+		},
+		"summaryPosting": {
+			"label": "Posting"
+		},
+		"summaryHeader": {
+			"label": "Header"
+		},
+		"emptyTitle": "Belum ada akun",
+		"emptyDescription": "Tambahkan akun untuk mulai mencatat transaksi."
 	}
 }

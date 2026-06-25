@@ -1,4 +1,4 @@
-import { JournalEntry, ChartOfAccountWithChildren, AssetSummary } from "@/types";
+import { JournalEntry, ChartOfAccountWithChildren, AssetSummary, TrialBalanceEntry, IncomeStatement, BalanceSheet, CashFlow, CoaSummary } from "@/types";
 
 // ── Dummy Journal Entries ──────────────────────────────────────────────────
 export const dummyJournals: JournalEntry[] = [
@@ -682,115 +682,62 @@ export const dummyBalances: Record<string, number> = {
 };
 
 // ── Dummy Laporan data ────────────────────────────────────────────────────
-export const dummyTrialBalance = [
-	{
-		code: "1.01.01.02",
-		name: "BCA - Main",
-		type: "ASSET",
-		debit: 52000000,
-		credit: 2000000,
-	},
-	{
-		code: "1.01.02.01",
-		name: "Kas",
-		type: "ASSET",
-		debit: 3500000,
-		credit: 6000000,
-	},
-	{
-		code: "1.02.05.03",
-		name: "Emergency Fund",
-		type: "ASSET",
-		debit: 15000000,
-		credit: 0,
-	},
-	{
-		code: "2.01.01.00",
-		name: "Hutang Dagang",
-		type: "LIABILITY",
-		debit: 1200000,
-		credit: 2400000,
-	},
-	{
-		code: "3.00.00.00",
-		name: "Modal",
-		type: "EQUITY",
-		debit: 0,
-		credit: 50000000,
-	},
-	{
-		code: "4.01.01.01",
-		name: "Pendapatan Jasa",
-		type: "REVENUE",
-		debit: 0,
-		credit: 6000000,
-	},
-	{
-		code: "5.01.01.04",
-		name: "Biaya Perlengkapan",
-		type: "EXPENSE",
-		debit: 500000,
-		credit: 0,
-	},
-	{
-		code: "5.04.01.01",
-		name: "Beban Gaji",
-		type: "EXPENSE",
-		debit: 4000000,
-		credit: 0,
-	},
-	{
-		code: "5.04.01.02",
-		name: "Beban Bonus",
-		type: "EXPENSE",
-		debit: 1000000,
-		credit: 0,
-	},
+export const dummyTrialBalance: TrialBalanceEntry[] = [
+	{ code: "1101", name: "Kas", type: "ASSET", debit: 5500000, credit: 0 },
+	{ code: "1102", name: "Bank BCA", type: "ASSET", debit: 8700000, credit: 0 },
+	{ code: "1110", name: "Piutang Usaha", type: "ASSET", debit: 1000000, credit: 0 },
+	{ code: "1201", name: "Peralatan", type: "ASSET", debit: 6000000, credit: 0 },
+	{ code: "1209", name: "Akum. Penyusutan", type: "ASSET", debit: 0, credit: 1500000 },
+	{ code: "2001", name: "Hutang Dagang", type: "LIABILITY", debit: 0, credit: 3000000 },
+	{ code: "3001", name: "Modal", type: "EQUITY", debit: 0, credit: 13000000 },
+	{ code: "4001", name: "Pendapatan Jasa", type: "REVENUE", debit: 0, credit: 6000000 },
+	{ code: "6001", name: "Biaya Perlengkapan", type: "EXPENSE", debit: 500000, credit: 0 },
+	{ code: "6002", name: "Beban Gaji", type: "EXPENSE", debit: 1500000, credit: 0 },
+	{ code: "6003", name: "Beban Lain-lain", type: "EXPENSE", debit: 300000, credit: 0 },
 ];
 
-export const dummyIncomeStatement = {
+export const dummyIncomeStatement: IncomeStatement = {
 	revenues: [{ name: "Pendapatan Jasa", amount: 6000000 }],
 	expenses: [
 		{ name: "Biaya Perlengkapan", amount: 500000 },
-		{ name: "Beban Gaji", amount: 4000000 },
-		{ name: "Beban Bonus", amount: 1000000 },
+		{ name: "Beban Gaji", amount: 1500000 },
+		{ name: "Beban Lain-lain", amount: 300000 },
 	],
 	totalRevenue: 6000000,
-	totalExpense: 5500000,
-	netIncome: 500000,
+	totalExpense: 2300000,
+	netIncome: 3700000,
 };
 
-export const dummyBalanceSheet = {
+export const dummyBalanceSheet: BalanceSheet = {
 	currentAssets: [
-		{ name: "BCA - Main", balance: 50000000 },
-		{ name: "Kas", balance: 2500000 },
-		{ name: "Jago - Budget", balance: 3000000 },
+		{ name: "Kas", balance: 5500000 },
+		{ name: "Bank BCA", balance: 8700000 },
+		{ name: "Piutang Usaha", balance: 1000000 },
 	],
 	nonCurrentAssets: [
-		{ name: "Stockbit Sekuritas", balance: 12000000 },
-		{ name: "Emergency Fund", balance: 15000000 },
-		{ name: "Gold", balance: 8500000 },
+		{ name: "Peralatan", balance: 6000000 },
+		{ name: "Akum. Penyusutan", balance: -1500000 },
 	],
-	liabilities: [{ name: "Hutang Dagang", balance: 1200000 }],
+	liabilities: [{ name: "Hutang Dagang", balance: 3000000 }],
 	equity: [
-		{ name: "Modal", balance: 50000000 },
-		{ name: "Laba Periode Ini", balance: 500000 },
+		{ name: "Modal", balance: 13000000 },
+		{ name: "Laba Periode Ini", balance: 3700000 },
 	],
-	totalCurrentAssets: 55500000,
-	totalNonCurrentAssets: 35500000,
-	totalAssets: 91000000,
-	totalLiabilities: 1200000,
-	totalEquity: 50500000,
+	totalCurrentAssets: 15200000,
+	totalNonCurrentAssets: 4500000,
+	totalAssets: 19700000,
+	totalLiabilities: 3000000,
+	totalEquity: 16700000,
 };
 
-export const dummyCashFlow = {
+export const dummyCashFlow: CashFlow = {
 	operating: {
 		lines: [
 			{ label: "Penerimaan dari pelanggan", amount: 6000000 },
-			{ label: "Pembayaran beban operasi", amount: -5500000 },
-			{ label: "Pembayaran hutang dagang", amount: -1200000 },
+			{ label: "Pembayaran beban operasi", amount: -2300000 },
+			{ label: "Pembayaran hutang dagang", amount: -2500000 },
 		],
-		total: -700000,
+		total: 1200000,
 	},
 	investing: {
 		lines: [{ label: "Pembelian instrumen investasi", amount: -5000000 }],
@@ -800,7 +747,7 @@ export const dummyCashFlow = {
 		lines: [{ label: "Setoran modal", amount: 50000000 }],
 		total: 50000000,
 	},
-	netCashFlow: 44300000,
+	netCashFlow: 46200000,
 };
 
 // ── Dummy Asset Summary ─────────────────────────────────────────────────────
@@ -851,6 +798,128 @@ export const dummyAssetSummary: AssetSummary = {
 			icon: "package",
 			totalBalance: 0,
 			accounts: [],
+		},
+	],
+};
+
+// ── Dummy Full COA Tree ─────────────────────────────────────────────────────
+export const dummyFullCoa: CoaSummary = {
+	totalAccounts: 24,
+	postingAccounts: 18,
+	headerAccounts: 6,
+	groups: [
+		{
+			type: "ASSET",
+			label: "Aset",
+			icon: "wallet",
+			count: 12,
+			accounts: [
+				{
+					id: "h1", code: "1000", name: "Aset", type: "ASSET", isPosting: false, parentId: null, createdAt: "", updatedAt: "",
+					children: [
+						{
+							id: "h2", code: "1100", name: "Aset Lancar", type: "ASSET", isPosting: false, parentId: "h1", createdAt: "", updatedAt: "",
+							children: [
+								{ id: "a1", code: "1101", name: "Kas", type: "ASSET", isPosting: true, parentId: "h2", createdAt: "", updatedAt: "", children: [] },
+								{ id: "a2", code: "1102", name: "Bank BCA", type: "ASSET", isPosting: true, parentId: "h2", createdAt: "", updatedAt: "", children: [] },
+								{ id: "a3", code: "1103", name: "Bank Mandiri", type: "ASSET", isPosting: true, parentId: "h2", createdAt: "", updatedAt: "", children: [] },
+								{ id: "a4", code: "1110", name: "Piutang Usaha", type: "ASSET", isPosting: true, parentId: "h2", createdAt: "", updatedAt: "", children: [] },
+							],
+						},
+						{
+							id: "h3", code: "1200", name: "Aset Tetap", type: "ASSET", isPosting: false, parentId: "h1", createdAt: "", updatedAt: "",
+							children: [
+								{ id: "a5", code: "1201", name: "Peralatan Kantor", type: "ASSET", isPosting: true, parentId: "h3", createdAt: "", updatedAt: "", children: [] },
+								{ id: "a6", code: "1202", name: "Kendaraan", type: "ASSET", isPosting: true, parentId: "h3", createdAt: "", updatedAt: "", children: [] },
+								{ id: "a7", code: "1209", name: "Akum. Penyusutan", type: "ASSET", isPosting: true, parentId: "h3", createdAt: "", updatedAt: "", children: [] },
+							],
+						},
+						{
+							id: "h4", code: "1300", name: "Aset Lain-lain", type: "ASSET", isPosting: false, parentId: "h1", createdAt: "", updatedAt: "",
+							children: [
+								{ id: "a8", code: "1301", name: "Uang Muka", type: "ASSET", isPosting: true, parentId: "h4", createdAt: "", updatedAt: "", children: [] },
+								{ id: "a9", code: "1302", name: "Biaya Dibayar Dimuka", type: "ASSET", isPosting: true, parentId: "h4", createdAt: "", updatedAt: "", children: [] },
+							],
+						},
+					],
+				},
+			],
+		},
+		{
+			type: "LIABILITY",
+			label: "Liabilitas",
+			icon: "credit-card",
+			count: 4,
+			accounts: [
+				{
+					id: "h5", code: "2000", name: "Liabilitas", type: "LIABILITY", isPosting: false, parentId: null, createdAt: "", updatedAt: "",
+					children: [
+						{
+							id: "h6", code: "2100", name: "Liabilitas Jangka Pendek", type: "LIABILITY", isPosting: false, parentId: "h5", createdAt: "", updatedAt: "",
+							children: [
+								{ id: "a10", code: "2101", name: "Hutang Dagang", type: "LIABILITY", isPosting: true, parentId: "h6", createdAt: "", updatedAt: "", children: [] },
+								{ id: "a11", code: "2102", name: "Hutang Pajak", type: "LIABILITY", isPosting: true, parentId: "h6", createdAt: "", updatedAt: "", children: [] },
+							],
+						},
+						{
+							id: "h7", code: "2200", name: "Liabilitas Jangka Panjang", type: "LIABILITY", isPosting: false, parentId: "h5", createdAt: "", updatedAt: "",
+							children: [
+								{ id: "a12", code: "2201", name: "Hutang Bank", type: "LIABILITY", isPosting: true, parentId: "h7", createdAt: "", updatedAt: "", children: [] },
+							],
+						},
+					],
+				},
+			],
+		},
+		{
+			type: "EQUITY",
+			label: "Ekuitas",
+			icon: "landmark",
+			count: 3,
+			accounts: [
+				{
+					id: "h8", code: "3000", name: "Ekuitas", type: "EQUITY", isPosting: false, parentId: null, createdAt: "", updatedAt: "",
+					children: [
+						{ id: "a13", code: "3001", name: "Modal", type: "EQUITY", isPosting: true, parentId: "h8", createdAt: "", updatedAt: "", children: [] },
+						{ id: "a14", code: "3002", name: "Laba Ditahan", type: "EQUITY", isPosting: true, parentId: "h8", createdAt: "", updatedAt: "", children: [] },
+						{ id: "a15", code: "3003", name: "Laba Berjalan", type: "EQUITY", isPosting: true, parentId: "h8", createdAt: "", updatedAt: "", children: [] },
+					],
+				},
+			],
+		},
+		{
+			type: "REVENUE",
+			label: "Pendapatan",
+			icon: "trending-up",
+			count: 3,
+			accounts: [
+				{
+					id: "h9", code: "4000", name: "Pendapatan", type: "REVENUE", isPosting: false, parentId: null, createdAt: "", updatedAt: "",
+					children: [
+						{ id: "a16", code: "4001", name: "Pendapatan Jasa", type: "REVENUE", isPosting: true, parentId: "h9", createdAt: "", updatedAt: "", children: [] },
+						{ id: "a17", code: "4002", name: "Pendapatan Produk", type: "REVENUE", isPosting: true, parentId: "h9", createdAt: "", updatedAt: "", children: [] },
+						{ id: "a18", code: "4003", name: "Pendapatan Lain-lain", type: "REVENUE", isPosting: true, parentId: "h9", createdAt: "", updatedAt: "", children: [] },
+					],
+				},
+			],
+		},
+		{
+			type: "EXPENSE",
+			label: "Beban",
+			icon: "trending-down",
+			count: 5,
+			accounts: [
+				{
+					id: "h10", code: "5000", name: "Beban", type: "EXPENSE", isPosting: false, parentId: null, createdAt: "", updatedAt: "",
+					children: [
+						{ id: "a19", code: "5001", name: "Beban Gaji", type: "EXPENSE", isPosting: true, parentId: "h10", createdAt: "", updatedAt: "", children: [] },
+						{ id: "a20", code: "5002", name: "Beban Sewa", type: "EXPENSE", isPosting: true, parentId: "h10", createdAt: "", updatedAt: "", children: [] },
+						{ id: "a21", code: "5003", name: "Beban Listrik", type: "EXPENSE", isPosting: true, parentId: "h10", createdAt: "", updatedAt: "", children: [] },
+						{ id: "a22", code: "5004", name: "Beban ATK", type: "EXPENSE", isPosting: true, parentId: "h10", createdAt: "", updatedAt: "", children: [] },
+						{ id: "a23", code: "5005", name: "Beban Lain-lain", type: "EXPENSE", isPosting: true, parentId: "h10", createdAt: "", updatedAt: "", children: [] },
+					],
+				},
+			],
 		},
 	],
 };

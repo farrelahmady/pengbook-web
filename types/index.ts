@@ -100,3 +100,87 @@ export interface AssetSummary {
 	currentAsset: number;
 	groups: AssetGroup[];
 }
+
+// Report
+export interface TrialBalanceEntry {
+	code: string;
+	name: string;
+	type: AccountType;
+	debit: number;
+	credit: number;
+}
+
+export interface TrialBalanceGroup {
+	label: string;
+	entries: TrialBalanceEntry[];
+}
+
+export interface IncomeStatementItem {
+	name: string;
+	amount: number;
+}
+
+export interface IncomeStatement {
+	revenues: IncomeStatementItem[];
+	expenses: IncomeStatementItem[];
+	totalRevenue: number;
+	totalExpense: number;
+	netIncome: number;
+}
+
+export interface BalanceSheetItem {
+	name: string;
+	balance: number;
+}
+
+export interface BalanceSheet {
+	currentAssets: BalanceSheetItem[];
+	nonCurrentAssets: BalanceSheetItem[];
+	liabilities: BalanceSheetItem[];
+	equity: BalanceSheetItem[];
+	totalCurrentAssets: number;
+	totalNonCurrentAssets: number;
+	totalAssets: number;
+	totalLiabilities: number;
+	totalEquity: number;
+}
+
+export interface CashFlowLine {
+	label: string;
+	amount: number;
+}
+
+export interface CashFlowSection {
+	lines: CashFlowLine[];
+	total: number;
+}
+
+export interface CashFlow {
+	operating: CashFlowSection;
+	investing: CashFlowSection;
+	financing: CashFlowSection;
+	netCashFlow: number;
+}
+
+export interface ReportSummary {
+	netIncome: number;
+	totalAsset: number;
+	netCashFlow: number;
+	isTrialBalanceBalanced: boolean;
+}
+
+// COA Page
+export interface CoaTypeGroup {
+	type: AccountType;
+	label: string;
+	icon: string;
+	accounts: ChartOfAccountWithChildren[];
+	count: number;
+}
+
+export interface CoaSummary {
+	totalAccounts: number;
+	postingAccounts: number;
+	headerAccounts: number;
+	groups: CoaTypeGroup[];
+}

@@ -80,7 +80,6 @@ export function useTransferManager(client?: HttpClient) {
 				setTransfers((prev) => {
 					const next = new Map(prev);
 					const existing = next.get(id);
-					console.log("Existing OnStatusChange", existing);
 					next.set(id, {
 						id,
 						type,
@@ -112,7 +111,6 @@ export function useTransferManager(client?: HttpClient) {
 					const next = new Map(prev);
 					const existing = next.get(id);
 
-					console.log("Existing", existing);
 					if (existing) {
 						next.set(id, {
 							...existing,
