@@ -123,7 +123,7 @@
 	--foreground: 240 27% 14%;
 	--card: 0 0% 100%;
 	--card-foreground: 240 27% 14%;
-	--popover: 0 0% 100%;
+	--popover: 240 24% 13%;
 	--popover-foreground: 240 27% 14%;
 	--primary: 232 56% 53%;
 	--primary-foreground: 0 0% 100%;
@@ -241,7 +241,7 @@
 @layer components {
 	/* Kontainer mobile-first */
 	.phone-container {
-		@apply max-w-[390px] mx-auto min-h-dvh relative;
+		@apply max-w-160 mx-auto min-h-dvh relative;
 	}
 
 	/* Angka monospace */

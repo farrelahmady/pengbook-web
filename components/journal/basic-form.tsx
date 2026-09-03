@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslations } from "next-intl";
+import { useQueryClient } from "@tanstack/react-query";
+import { journalService } from "@/services/journal";
 
 const POSTING_ACCOUNTS = [
   { id: "a1", code: "1.01.01.01", name: "Mandiri - Main" },
@@ -20,23 +23,50 @@ interface BasicFormProps {
 }
 
 export function BasicForm({ onSuccess }: BasicFormProps) {
+  const t = useTranslations("journalPage.basic");
+  const queryClient = useQueryClient();
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [description, setDesc] = useState("");
   const [fromAccount, setFrom] = useState("");
   const [toAccount, setTo] = useState("");
   const [amount, setAmount] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit() {
+  async function handleSubmit() {
     if (!fromAccount || !toAccount || !amount) {
-      toast.error("Lengkapi semua field terlebih dahulu");
+      toast.error(t("toastValidation"));
       return;
     }
     if (fromAccount === toAccount) {
-      toast.error("Akun asal dan tujuan tidak boleh sama");
+      toast.error(t("toastSameAccount"));
       return;
     }
-    toast.success("Transaksi berhasil disimpan");
-    onSuccess();
+
+    const toastId = toast.loading(t("toastLoading"));
+    setIsSubmitting(true);
+
+    try {
+      const from = POSTING_ACCOUNTS.find((a) => a.id === fromAccount);
+      const to = POSTING_ACCOUNTS.find((a) => a.id === toAccount);
+
+      await journalService.create({
+        date: new Date(date).toISOString(),
+        description: description || undefined,
+        lines: [
+          { accountId: toAccount, debit: parseFloat(amount), credit: 0 },
+          { accountId: fromAccount, debit: 0, credit: parseFloat(amount) },
+        ],
+      });
+
+      toast.success(t("toastSuccess"), { id: toastId });
+      queryClient.invalidateQueries({ queryKey: ["journals"] });
+      queryClient.invalidateQueries({ queryKey: ["journalSummary"] });
+      onSuccess();
+    } catch (err) {
+      toast.error(t("toastError"), { id: toastId });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   const selectClass =
@@ -46,9 +76,9 @@ export function BasicForm({ onSuccess }: BasicFormProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Tanggal */}
+      {/* Date */}
       <div>
-        <label className={labelClass}>Tanggal</label>
+        <label className={labelClass}>{t("date")}</label>
         <input
           type="date"
           value={date}
@@ -57,12 +87,12 @@ export function BasicForm({ onSuccess }: BasicFormProps) {
         />
       </div>
 
-      {/* Deskripsi */}
+      {/* Description */}
       <div>
-        <label className={labelClass}>Deskripsi</label>
+        <label className={labelClass}>{t("description")}</label>
         <input
           type="text"
-          placeholder="Contoh: Beli tinta printer..."
+          placeholder={t("descriptionPlaceholder")}
           value={description}
           onChange={(e) => setDesc(e.target.value)}
           className={selectClass}
@@ -71,13 +101,13 @@ export function BasicForm({ onSuccess }: BasicFormProps) {
 
       {/* From */}
       <div>
-        <label className={labelClass}>Dari (Akun Kredit)</label>
+        <label className={labelClass}>{t("fromAccount")}</label>
         <select
           value={fromAccount}
           onChange={(e) => setFrom(e.target.value)}
           className={selectClass}
         >
-          <option value="">Pilih akun asal...</option>
+          <option value="">{t("fromPlaceholder")}</option>
           {POSTING_ACCOUNTS.map((a) => (
             <option key={a.id} value={a.id}>
               {a.code} · {a.name}
@@ -97,13 +127,13 @@ export function BasicForm({ onSuccess }: BasicFormProps) {
 
       {/* To */}
       <div>
-        <label className={labelClass}>Ke (Akun Debit)</label>
+        <label className={labelClass}>{t("toAccount")}</label>
         <select
           value={toAccount}
           onChange={(e) => setTo(e.target.value)}
           className={selectClass}
         >
-          <option value="">Pilih akun tujuan...</option>
+          <option value="">{t("toPlaceholder")}</option>
           {POSTING_ACCOUNTS.map((a) => (
             <option key={a.id} value={a.id}>
               {a.code} · {a.name}
@@ -114,7 +144,7 @@ export function BasicForm({ onSuccess }: BasicFormProps) {
 
       {/* Amount */}
       <div>
-        <label className={labelClass}>Jumlah</label>
+        <label className={labelClass}>{t("amount")}</label>
         <div className="relative">
           <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-[13px] text-secondary-400">
             Rp
@@ -131,20 +161,21 @@ export function BasicForm({ onSuccess }: BasicFormProps) {
 
       {/* Auto hint */}
       <div className="bg-primary-50 rounded-xl px-3.5 py-3 text-[12px] text-primary-700 leading-relaxed">
-        <span className="font-semibold">Jurnal dibentuk otomatis:</span>
+        <span className="font-semibold">{t("hint")}</span>
         <br />
         <span className="font-mono text-[11px]">
-          DR: Akun Ke &nbsp;|&nbsp; CR: Akun Dari
+          {t("hintDetail")}
         </span>
       </div>
 
       {/* Submit */}
       <button
         onClick={handleSubmit}
+        disabled={isSubmitting}
         className="w-full bg-primary-500 text-white font-semibold text-[15px] py-3.5 rounded-xl
-                   active:scale-[0.98] transition-transform mt-1"
+                   active:scale-[0.98] transition-transform mt-1 disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        Simpan Transaksi
+        {t("submit")}
       </button>
     </div>
   );
